@@ -1,0 +1,221 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: courier_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: courier_core
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - courier-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    container_name: courier_redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    networks:
+      - courier-net
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: courier_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - courier-net
+
+  minio:
+    image: minio/minio
+    container_name: courier_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - courier-net
+
+  discovery-server:
+    build:
+      context: ./backend/discovery-server
+      dockerfile: Dockerfile
+    container_name: courier_discovery
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - courier-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gateway-service:
+    build:
+      context: ./backend/gateway-service
+      dockerfile: Dockerfile
+    container_name: courier_gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - courier-net
+    depends_on:
+      discovery-server:
+        condition: service_started
+
+  auth-service:
+    build:
+      context: ./backend/auth-service
+      dockerfile: Dockerfile
+    container_name: courier_auth
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - courier-net
+    depends_on:
+      discovery-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  order-service:
+    build:
+      context: ./backend/order-service
+      dockerfile: Dockerfile
+    container_name: courier_order
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - courier-net
+    depends_on:
+      discovery-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+
+  driver-service:
+    build:
+      context: ./backend/driver-service
+      dockerfile: Dockerfile
+    container_name: courier_driver
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - courier-net
+    depends_on:
+      discovery-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  tracking-service:
+    build:
+      context: ./backend/tracking-service
+      dockerfile: Dockerfile
+    container_name: courier_tracking
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - courier-net
+    depends_on:
+      discovery-server:
+        condition: service_started
+      redis:
+        condition: service_started
+
+  pod-service:
+    build:
+      context: ./backend/pod-service
+      dockerfile: Dockerfile
+    container_name: courier_pod
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - courier-net
+    depends_on:
+      discovery-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+
+  payment-service:
+    build:
+      context: ./backend/payment-service
+      dockerfile: Dockerfile
+    container_name: courier_payment
+    ports:
+      - "8086:8086"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - courier-net
+    depends_on:
+      discovery-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  analytics-service:
+    build:
+      context: ./backend/analytics-service
+      dockerfile: Dockerfile
+    container_name: courier_analytics
+    ports:
+      - "8087:8087"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - courier-net
+    depends_on:
+      discovery-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+
+networks:
+  courier-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  minio_data:
