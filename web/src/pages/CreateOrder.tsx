@@ -1,44 +1,30 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { createOrder, Order } from '../store/slices/orderSlice';
-import { AppDispatch } from '../store/store';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Package } from 'lucide-react';
+import { orderService } from '../services/orderService';
 
 const CreateOrder = () => {
-    const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
     
     const [formData, setFormData] = useState({
-        customerName: '',
-        description: '',
-        pickupLat: '',
-        pickupLng: '',
-        deliveryLat: '',
-        deliveryLng: '',
-        amount: ''
+        pickupAddress: '',
+        deliveryAddress: '',
+        packageDescription: ''
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
         
-        const orderPayload: Partial<Order> = {
-            customerName: formData.customerName,
-            description: formData.description,
-            pickupLocation: {
-                latitude: parseFloat(formData.pickupLat),
-                longitude: parseFloat(formData.pickupLng)
-            },
-            deliveryLocation: {
-                latitude: parseFloat(formData.deliveryLat),
-                longitude: parseFloat(formData.deliveryLng)
-            },
-            totalAmount: parseFloat(formData.amount)
-        };
-
-        const result = await dispatch(createOrder(orderPayload));
-        if (createOrder.fulfilled.match(result)) {
-            navigate('/orders');
+        try {
+            await orderService.createOrder(formData);
+            navigate('/'); // Redirect to dashboard
+        } catch (error) {
+            console.error('Failed to create order', error);
+            alert('Failed to create order');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -51,49 +37,26 @@ const CreateOrder = () => {
 
     return (
         <div className="max-w-3xl mx-auto">
-            <h1 className="text-2xl font-bold text-slate-800 mb-6">Create New Order</h1>
+            <h1 className="text-2xl font-bold text-slate-800 mb-6">New Shipment</h1>
             
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Customer Info */}
+                    {/* Package Info */}
                     <div>
                         <h3 className="text-lg font-semibold text-slate-700 mb-4 flex items-center gap-2">
-                            <Package size={20} className="text-blue-500"/> Order Details
+                            <Package size={20} className="text-blue-500"/> Package Details
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-600 mb-1">Customer Name</label>
-                                <input
-                                    type="text"
-                                    name="customerName"
-                                    value={formData.customerName}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-600 mb-1">Amount ($)</label>
-                                <input
-                                    type="number"
-                                    name="amount"
-                                    value={formData.amount}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    required
-                                    step="0.01"
-                                />
-                            </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-600 mb-1">Description</label>
-                                <textarea
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    rows={3}
-                                />
-                            </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-600 mb-1">Description</label>
+                            <textarea
+                                name="packageDescription"
+                                value={formData.packageDescription}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                rows={3}
+                                placeholder="e.g., Electronics, Fragile"
+                                required
+                            />
                         </div>
                     </div>
 
@@ -107,49 +70,27 @@ const CreateOrder = () => {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-4">
-                                <h4 className="font-medium text-slate-600">Pickup Location</h4>
+                                <label className="block text-sm font-medium text-slate-600 mb-1">Pickup Address</label>
                                 <input
-                                    type="number"
-                                    name="pickupLat"
-                                    placeholder="Latitude"
-                                    value={formData.pickupLat}
+                                    type="text"
+                                    name="pickupAddress"
+                                    value={formData.pickupAddress}
                                     onChange={handleChange}
                                     className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    step="any"
-                                    required
-                                />
-                                <input
-                                    type="number"
-                                    name="pickupLng"
-                                    placeholder="Longitude"
-                                    value={formData.pickupLng}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    step="any"
+                                    placeholder="123 Start St"
                                     required
                                 />
                             </div>
 
                             <div className="space-y-4">
-                                <h4 className="font-medium text-slate-600">Delivery Location</h4>
+                                <label className="block text-sm font-medium text-slate-600 mb-1">Delivery Address</label>
                                 <input
-                                    type="number"
-                                    name="deliveryLat"
-                                    placeholder="Latitude"
-                                    value={formData.deliveryLat}
+                                    type="text"
+                                    name="deliveryAddress"
+                                    value={formData.deliveryAddress}
                                     onChange={handleChange}
                                     className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    step="any"
-                                    required
-                                />
-                                <input
-                                    type="number"
-                                    name="deliveryLng"
-                                    placeholder="Longitude"
-                                    value={formData.deliveryLng}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    step="any"
+                                    placeholder="456 End Ave"
                                     required
                                 />
                             </div>
@@ -159,9 +100,10 @@ const CreateOrder = () => {
                     <div className="pt-4 flex justify-end">
                         <button
                             type="submit"
-                            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md"
+                            disabled={loading}
+                            className={`bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            Create Order
+                            {loading ? 'Creating...' : 'Create Shipment'}
                         </button>
                     </div>
                 </form>

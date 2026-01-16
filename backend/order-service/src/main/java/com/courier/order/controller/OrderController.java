@@ -29,6 +29,16 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getMyOrders(userId));
     }
 
+    @GetMapping("/available")
+    public ResponseEntity<List<Order>> getAvailableOrders() {
+        return ResponseEntity.ok(orderService.getAvailableOrders());
+    }
+
+    @GetMapping("/assigned")
+    public ResponseEntity<List<Order>> getDriverOrders(@RequestHeader("X-User-Id") String driverId) {
+        return ResponseEntity.ok(orderService.getDriverOrders(driverId));
+    }
+
     @PutMapping("/{id}/status")
     public ResponseEntity<Order> updateStatus(
             @PathVariable UUID id,

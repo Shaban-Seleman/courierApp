@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api, { endpoints } from '../../services/api';
+import { orderService } from '../../services/orderService';
 
 export enum OrderStatus {
     PENDING = 'PENDING',
@@ -45,8 +45,7 @@ export const fetchOrders = createAsyncThunk(
     'orders/fetchAll',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get(endpoints.orders.base);
-            return response.data;
+            return await orderService.getMyOrders();
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
         }
@@ -57,8 +56,7 @@ export const createOrder = createAsyncThunk(
     'orders/create',
     async (orderData: Partial<Order>, { rejectWithValue }) => {
         try {
-            const response = await api.post(endpoints.orders.create, orderData);
-            return response.data;
+            return await orderService.createOrder(orderData);
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || 'Failed to create order');
         }
@@ -69,8 +67,7 @@ export const updateOrderStatus = createAsyncThunk(
     'orders/updateStatus',
     async ({ id, status }: { id: string; status: OrderStatus }, { rejectWithValue }) => {
         try {
-            const response = await api.put(endpoints.orders.updateStatus(id), { status });
-            return response.data;
+            return await orderService.updateStatus(id, status);
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || 'Failed to update status');
         }

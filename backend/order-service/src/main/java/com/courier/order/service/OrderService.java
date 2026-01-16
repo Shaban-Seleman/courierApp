@@ -72,6 +72,14 @@ public class OrderService {
         return orderRepository.findByCustomerId(UUID.fromString(customerId));
     }
 
+    public List<Order> getAvailableOrders() {
+        return orderRepository.findByStatus(Order.OrderStatus.PENDING);
+    }
+
+    public List<Order> getDriverOrders(String driverId) {
+        return orderRepository.findByDriverId(UUID.fromString(driverId));
+    }
+
     private void validateTransition(Order.OrderStatus current, Order.OrderStatus next) {
         // Simple state machine logic
         if (current == Order.OrderStatus.DELIVERED || current == Order.OrderStatus.CANCELLED) {

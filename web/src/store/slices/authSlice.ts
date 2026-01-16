@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api, { endpoints } from '../../services/api';
+import { authService } from '../../services/authService';
 
 export type UserRole = 'CUSTOMER' | 'DRIVER' | 'ADMIN';
 
@@ -34,8 +34,7 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: { username: string; password: string }, { rejectWithValue }) => {
     try {
-      const response = await api.post(endpoints.auth.login, credentials);
-      return response.data; // Expected: { token, user: { ... } }
+      return await authService.login(credentials);
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
@@ -46,8 +45,7 @@ export const registerUser = createAsyncThunk(
     'auth/register',
     async (userData: { username: string; password: string; email: string; role: string }, { rejectWithValue }) => {
         try {
-            const response = await api.post(endpoints.auth.register, userData);
-            return response.data;
+            return await authService.register(userData);
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || 'Registration failed');
         }

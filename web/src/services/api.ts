@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Base Gateway URL
+// Base Gateway URL - ensure it matches your backend
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
 
 const api = axios.create({
@@ -24,7 +24,7 @@ api.interceptors.request.use(
   }
 );
 
-// Response Interceptor: Handle Errors (e.g., 401 Unauthorized)
+// Response Interceptor: Handle Errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -37,27 +37,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-export const endpoints = {
-  auth: {
-    login: '/auth/login',
-    register: '/auth/register',
-    validate: '/auth/validate',
-  },
-  orders: {
-    base: '/orders',
-    create: '/orders',
-    getById: (id: string) => `/orders/${id}`,
-    updateStatus: (id: string) => `/orders/${id}/status`,
-  },
-  tracking: {
-    connect: '/tracking/ws', // WebSocket endpoint
-    latest: (driverId: string) => `/tracking/${driverId}`,
-  },
-  pod: {
-    upload: '/pod/upload',
-    get: (orderId: string) => `/pod/${orderId}`,
-  },
-};
 
 export default api;
