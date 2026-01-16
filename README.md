@@ -1,6 +1,6 @@
 # Courier Management System
 
-A microservices-based Courier Management System built with Java 21 and Spring Boot 3.
+A microservices-based Courier Management System built with Java 21, Spring Boot 3, and React/React Native.
 
 ## Project Structure
 
@@ -13,6 +13,8 @@ A microservices-based Courier Management System built with Java 21 and Spring Bo
   - `tracking-service`: Real-time location tracking (WebSockets + Redis).
   - `pod-service`: Proof of Delivery (MinIO).
   
+- **`web/`**: React Admin Dashboard (Vite + Redux Toolkit + Tailwind).
+- **`mobile/`**: React Native Driver App (Expo + NativeWind).
 - **`infrastructure/`**: Docker & K8s configurations.
 - **`docker-compose.yml`**: Orchestrates the local development environment.
 
@@ -20,8 +22,32 @@ A microservices-based Courier Management System built with Java 21 and Spring Bo
 
 - Java 21
 - Docker & Docker Compose
+- Node.js (for frontend)
 
 ## Getting Started
+
+1. **Start Infrastructure & Services**:
+   ```bash
+   docker-compose up -d --build
+   ```
+   This will start all backend microservices, databases, and the **Web Dashboard** (accessible at http://localhost:3000).
+
+2. **Mobile App**:
+   ```bash
+   cd mobile
+   npm install
+   npm start
+   ```
+
+## Architecture
+
+- **Service Discovery**: Eureka
+- **API Gateway**: Spring Cloud Gateway
+- **Communication**: REST (Feign) & Async (RabbitMQ)
+- **Database**: PostgreSQL (Per Service)
+- **Caching/Geo**: Redis
+- **Storage**: MinIO (S3 Compatible)
+
 
 1. **Start Infrastructure**:
    ```bash

@@ -212,6 +212,16 @@ services:
       rabbitmq:
         condition: service_started
 
+  web-dashboard:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: courier_web
+    ports:
+      - "3000:80"
+    networks:
+      - courier-net
+
 networks:
   courier-net:
     driver: bridge
