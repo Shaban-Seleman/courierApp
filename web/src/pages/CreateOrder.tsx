@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../store/store';
+import { createOrder } from '../store/slices/orderSlice';
 import { MapPin, Package } from 'lucide-react';
-import { orderService } from '../services/orderService';
 
 const CreateOrder = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch<AppDispatch>();
     const [loading, setLoading] = useState(false);
     
     const [formData, setFormData] = useState({
@@ -18,7 +21,7 @@ const CreateOrder = () => {
         setLoading(true);
         
         try {
-            await orderService.createOrder(formData);
+            await dispatch(createOrder(formData)).unwrap();
             navigate('/'); // Redirect to dashboard
         } catch (error) {
             console.error('Failed to create order', error);

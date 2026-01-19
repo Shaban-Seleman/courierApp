@@ -9,52 +9,73 @@ export enum OrderStatus {
     CANCELLED = 'CANCELLED'
 }
 
-export interface Location {
-    latitude: number;
-    longitude: number;
-}
-
 export interface Order {
     id: string;
-    customerName: string;
-    pickupLocation: Location;
-    deliveryLocation: Location;
+    customerId: string;
+    driverId?: string;
+    pickupAddress: string;
+    deliveryAddress: string;
+    packageDescription: string;
     status: OrderStatus;
-    courierId?: string;
     createdAt: string;
-    totalAmount: number;
-    description?: string;
+    updatedAt: string;
 }
 
 interface OrderState {
-    orders: Order[];
+    myOrders: Order[];
+    availableOrders: Order[];
+    driverOrders: Order[]; // Orders assigned to me (as a driver)
     currentOrder: Order | null;
     loading: boolean;
     error: string | null;
 }
 
 const initialState: OrderState = {
-    orders: [],
+    myOrders: [],
+    availableOrders: [],
+    driverOrders: [],
     currentOrder: null,
     loading: false,
     error: null,
 };
 
 // Async Thunks
-export const fetchOrders = createAsyncThunk(
-    'orders/fetchAll',
+export const fetchMyOrders = createAsyncThunk(
+    'orders/fetchMyOrders',
     async (_, { rejectWithValue }) => {
         try {
             return await orderService.getMyOrders();
         } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch my orders');
+        }
+    }
+);
+
+export const fetchAvailableOrders = createAsyncThunk(
+    'orders/fetchAvailableOrders',
+    async (_, { rejectWithValue }) => {
+        try {
+            return await orderService.getAvailableOrders();
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch available orders');
+        }
+    }
+);
+
+export const fetchDriverOrders = createAsyncThunk(
+    'orders/fetchDriverOrders',
+    async (_, { rejectWithValue }) => {
+        try {
+            return await orderService.getDriverOrders();
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch driver orders');
         }
     }
 );
 
 export const createOrder = createAsyncThunk(
     'orders/create',
-    async (orderData: Partial<Order>, { rejectWithValue }) => {
+    async (orderData: { pickupAddress: string; deliveryAddress: string; packageDescription: string }, { rejectWithValue }) => {
         try {
             return await orderService.createOrder(orderData);
         } catch (error: any) {
@@ -74,41 +95,69 @@ export const updateOrderStatus = createAsyncThunk(
     }
 );
 
+export const assignDriver = createAsyncThunk(
+    'orders/assignDriver',
+    async ({ orderId, driverId }: { orderId: string; driverId: string }, { rejectWithValue }) => {
+        try {
+            return await orderService.assignDriver(orderId, driverId);
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to assign driver');
+        }
+    }
+);
+
 const orderSlice = createSlice({
     name: 'orders',
     initialState,
     reducers: {
         clearCurrentOrder: (state) => {
             state.currentOrder = null;
+        },
+        clearOrderError: (state) => {
+            state.error = null;
         }
     },
     extraReducers: (builder) => {
         builder
-            // Fetch All
-            .addCase(fetchOrders.pending, (state) => {
+            // Fetch My Orders
+            .addCase(fetchMyOrders.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(fetchOrders.fulfilled, (state, action) => {
+            .addCase(fetchMyOrders.fulfilled, (state, action) => {
                 state.loading = false;
-                state.orders = action.payload;
+                state.myOrders = action.payload;
             })
-            .addCase(fetchOrders.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload as string;
+            // Fetch Available Orders
+            .addCase(fetchAvailableOrders.fulfilled, (state, action) => {
+                state.availableOrders = action.payload;
+            })
+            // Fetch Driver Orders
+            .addCase(fetchDriverOrders.fulfilled, (state, action) => {
+                state.driverOrders = action.payload;
             })
             // Create
             .addCase(createOrder.fulfilled, (state, action) => {
-                state.orders.push(action.payload);
+                state.myOrders.push(action.payload);
             })
             // Update Status
             .addCase(updateOrderStatus.fulfilled, (state, action) => {
-                const index = state.orders.findIndex(o => o.id === action.payload.id);
-                if (index !== -1) {
-                    state.orders[index] = action.payload;
-                }
+                // Update in all lists if present
+                const updateInList = (list: Order[]) => {
+                    const index = list.findIndex(o => o.id === action.payload.id);
+                    if (index !== -1) list[index] = action.payload;
+                };
+                updateInList(state.myOrders);
+                updateInList(state.driverOrders);
+                updateInList(state.availableOrders);
+            })
+            // Assign Driver
+            .addCase(assignDriver.fulfilled, (state, action) => {
+                // Remove from available, add to driver orders (if it's me), update myOrders
+                 state.availableOrders = state.availableOrders.filter(o => o.id !== action.payload.id);
+                 state.driverOrders.push(action.payload);
             });
     },
 });
 
-export const { clearCurrentOrder } = orderSlice.actions;
+export const { clearCurrentOrder, clearOrderError } = orderSlice.actions;
 export default orderSlice.reducer;
