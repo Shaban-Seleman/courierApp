@@ -5,7 +5,7 @@ export type UserRole = 'CUSTOMER' | 'DRIVER' | 'ADMIN';
 
 export interface User {
   id: string;
-  username: string;
+  fullName: string;
   email: string;
   role: UserRole;
 }

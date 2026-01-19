@@ -91,7 +91,7 @@ const DriverDashboard = () => {
             {/* Status Header */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
                 <div>
-                    <h2 className="text-xl font-bold text-slate-800">Welcome, {user?.username}</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Welcome, {user?.fullName}</h2>
                     <p className="text-slate-500 text-sm">Vehicle: {profile.vehicleType} - {profile.licensePlate}</p>
                 </div>
                 <div className="flex items-center gap-4">

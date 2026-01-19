@@ -1,11 +1,12 @@
 import { Bell, Search, User, LogOut } from 'lucide-react';
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../store/slices/authSlice';
-import { AppDispatch } from '../store/store';
+import { AppDispatch, RootState } from '../store/store';
 
 const Header = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const user = useSelector((state: RootState) => state.auth.user);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const handleLogout = () => {
@@ -35,8 +36,8 @@ const Header = () => {
                 onClick={() => setShowDropdown(!showDropdown)}
             >
             <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-slate-700">Admin User</p>
-                <p className="text-xs text-slate-500">Super Admin</p>
+                <p className="text-sm font-semibold text-slate-700">{user?.fullName || 'User'}</p>
+                <p className="text-xs text-slate-500">{user?.role || 'Guest'}</p>
             </div>
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 border border-blue-200">
                 <User size={20} />

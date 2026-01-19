@@ -3,6 +3,8 @@ package com.courier.driver.service;
 import com.courier.driver.config.RabbitMQConfig;
 import com.courier.driver.dto.DriverProfileRequest;
 import com.courier.driver.entity.Driver;
+import com.courier.driver.exception.DriverAlreadyExistsException;
+import com.courier.driver.exception.DriverNotFoundException;
 import com.courier.driver.repository.DriverRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +25,7 @@ public class DriverService {
     @Transactional
     public Driver createProfile(UUID userId, DriverProfileRequest request) {
         if (driverRepository.findByUserId(userId).isPresent()) {
-            throw new RuntimeException("Driver profile already exists");
+            throw new DriverAlreadyExistsException("Driver profile already exists");
         }
 
         var driver = Driver.builder()
@@ -39,7 +41,7 @@ public class DriverService {
     @Transactional
     public Driver toggleStatus(UUID userId, Driver.DriverStatus status) {
         var driver = driverRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Driver not found"));
+                .orElseThrow(() -> new DriverNotFoundException("Driver not found"));
         
         driver.setStatus(status);
         Driver savedDriver = driverRepository.save(driver);
@@ -53,6 +55,6 @@ public class DriverService {
 
     public Driver getProfile(UUID userId) {
         return driverRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Driver not found"));
+                .orElseThrow(() -> new DriverNotFoundException("Driver not found"));
     }
 }
