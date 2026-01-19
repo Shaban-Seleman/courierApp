@@ -12,6 +12,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.courier.auth.dto.UserDto;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -36,7 +38,8 @@ public class AuthService {
         userRepository.save(user);
 
         var token = jwtProvider.generateToken(user.getEmail(), user.getId(), user.getRole().name());
-        return new AuthResponse(token);
+        var userDto = new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole().name());
+        return new AuthResponse(token, userDto);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -48,6 +51,7 @@ public class AuthService {
                 .orElseThrow();
         
         var token = jwtProvider.generateToken(user.getEmail(), user.getId(), user.getRole().name());
-        return new AuthResponse(token);
+        var userDto = new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole().name());
+        return new AuthResponse(token, userDto);
     }
 }
