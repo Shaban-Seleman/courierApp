@@ -81,10 +81,36 @@ public class OrderService {
     }
 
     private void validateTransition(Order.OrderStatus current, Order.OrderStatus next) {
-        // Simple state machine logic
-        if (current == Order.OrderStatus.DELIVERED || current == Order.OrderStatus.CANCELLED) {
-            throw new IllegalStateException("Cannot update terminal state");
+        if (current == next) {
+            return;
         }
-        // Add more specific rules as needed
+        
+        if (current == Order.OrderStatus.DELIVERED || current == Order.OrderStatus.CANCELLED) {
+            throw new IllegalStateException("Cannot update terminal state: " + current);
+        }
+
+        if (next == Order.OrderStatus.CANCELLED) {
+            return; // Can cancel from any non-terminal state
+        }
+
+        switch (current) {
+            case PENDING:
+                if (next != Order.OrderStatus.ASSIGNED) {
+                    throw new IllegalStateException("PENDING orders must be ASSIGNED next");
+                }
+                break;
+            case ASSIGNED:
+                if (next != Order.OrderStatus.PICKED_UP) {
+                    throw new IllegalStateException("ASSIGNED orders must be PICKED_UP next");
+                }
+                break;
+            case PICKED_UP:
+                if (next != Order.OrderStatus.DELIVERED) {
+                    throw new IllegalStateException("PICKED_UP orders must be DELIVERED next");
+                }
+                break;
+            default:
+                throw new IllegalStateException("Invalid state transition from " + current + " to " + next);
+        }
     }
 }

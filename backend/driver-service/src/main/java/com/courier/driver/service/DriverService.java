@@ -1,9 +1,12 @@
 package com.courier.driver.service;
 
+import com.courier.driver.config.RabbitMQConfig;
 import com.courier.driver.dto.DriverProfileRequest;
 import com.courier.driver.entity.Driver;
 import com.courier.driver.repository.DriverRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,9 +14,11 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DriverService {
 
     private final DriverRepository driverRepository;
+    private final RabbitTemplate rabbitTemplate;
 
     @Transactional
     public Driver createProfile(UUID userId, DriverProfileRequest request) {
@@ -37,7 +42,13 @@ public class DriverService {
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
         
         driver.setStatus(status);
-        return driverRepository.save(driver);
+        Driver savedDriver = driverRepository.save(driver);
+
+        // Publish event
+        rabbitTemplate.convertAndSend(RabbitMQConfig.DRIVER_EXCHANGE, "driver.status.changed", savedDriver);
+        log.info("Driver status updated: {} -> {}", userId, status);
+        
+        return savedDriver;
     }
 
     public Driver getProfile(UUID userId) {
