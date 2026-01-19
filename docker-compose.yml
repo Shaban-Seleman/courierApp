@@ -28,6 +28,15 @@ services:
     networks:
       - courier-net
 
+  mailhog:
+    image: mailhog/mailhog
+    container_name: courier_mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - courier-net
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: courier_rabbitmq

@@ -1,8 +1,10 @@
 package com.courier.auth.controller;
 
 import com.courier.auth.dto.AuthResponse;
+import com.courier.auth.dto.ForgotPasswordRequest;
 import com.courier.auth.dto.LoginRequest;
 import com.courier.auth.dto.RegisterRequest;
+import com.courier.auth.dto.ResetPasswordRequest;
 import com.courier.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,5 +25,23 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String token) {
+        authService.logout(token);
+        return ResponseEntity.ok().build();
     }
 }

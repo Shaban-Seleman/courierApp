@@ -45,6 +45,11 @@ public class JwtProvider {
         return extractAllClaims(token).getSubject();
     }
 
+    public long getRemainingTime(String token) {
+        Date expiration = extractAllClaims(token).getExpiration();
+        return expiration.getTime() - System.currentTimeMillis();
+    }
+
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSignInKey())

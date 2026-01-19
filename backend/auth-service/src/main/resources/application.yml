@@ -15,6 +15,17 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  mail:
+    host: localhost
+    port: 1025
+    username: null
+    password: null
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
   profiles:
     active: default
 
@@ -34,6 +45,9 @@ spring:
       on-profile: docker
   datasource:
     url: jdbc:postgresql://postgres:5432/auth_db
+  mail:
+    host: mailhog
+    port: 1025
 eureka:
   client:
     service-url:

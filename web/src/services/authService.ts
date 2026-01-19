@@ -21,8 +21,22 @@ export const authService = {
     return response.data;
   },
 
-  logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  forgotPassword: async (email: string) => {
+    return await api.post('/auth/forgot-password', { email });
+  },
+
+  resetPassword: async (token: string, newPassword: string) => {
+    return await api.post('/auth/reset-password', { token, newPassword });
+  },
+
+  logout: async () => {
+    try {
+        await api.post('/auth/logout');
+    } catch (error) {
+        console.error("Logout API call failed", error);
+    } finally {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+    }
   }
 };

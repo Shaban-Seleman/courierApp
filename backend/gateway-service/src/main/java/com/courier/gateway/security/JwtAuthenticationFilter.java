@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -22,8 +23,11 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
     @Value("${jwt.secret}")
     private String secretKey;
 
-    public JwtAuthenticationFilter() {
+    private final ReactiveStringRedisTemplate redisTemplate;
+
+    public JwtAuthenticationFilter(ReactiveStringRedisTemplate redisTemplate) {
         super(Config.class);
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -33,7 +37,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
 
             // Allow Swagger/OpenAPI endpoints without token
             String path = request.getURI().getPath();
-            if (path.contains("/swagger-ui") || path.contains("/v3/api-docs") || path.contains("/webjars")) {
+            if (path.contains("/swagger-ui") || path.contains("/v3/api-docs") || path.contains("/webjars") || path.contains("/auth/")) {
                 return chain.filter(exchange);
             }
 
@@ -49,21 +53,28 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
 
             String token = authHeader.substring(7);
 
-            try {
-                Claims claims = validateToken(token);
-                
-                // Mutate the request to forward headers to downstream services
-                ServerHttpRequest modifiedRequest = request.mutate()
-                        .header("X-User-Id", claims.get("userId", String.class))
-                        .header("X-User-Role", claims.get("role", String.class))
-                        .header("X-User-Email", claims.getSubject())
-                        .build();
+            return redisTemplate.hasKey(token)
+                    .flatMap(isBlacklisted -> {
+                        if (Boolean.TRUE.equals(isBlacklisted)) {
+                            return this.onError(exchange, "Token is Blacklisted", HttpStatus.UNAUTHORIZED);
+                        }
 
-                return chain.filter(exchange.mutate().request(modifiedRequest).build());
+                        try {
+                            Claims claims = validateToken(token);
 
-            } catch (Exception e) {
-                return this.onError(exchange, "Invalid Token", HttpStatus.UNAUTHORIZED);
-            }
+                            // Mutate the request to forward headers to downstream services
+                            ServerHttpRequest modifiedRequest = request.mutate()
+                                    .header("X-User-Id", claims.get("userId", String.class))
+                                    .header("X-User-Role", claims.get("role", String.class))
+                                    .header("X-User-Email", claims.getSubject())
+                                    .build();
+
+                            return chain.filter(exchange.mutate().request(modifiedRequest).build());
+
+                        } catch (Exception e) {
+                            return this.onError(exchange, "Invalid Token", HttpStatus.UNAUTHORIZED);
+                        }
+                    });
         };
     }
 
