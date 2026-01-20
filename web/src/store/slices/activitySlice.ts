@@ -24,8 +24,7 @@ export const fetchRecentActivities = createAsyncThunk(
   'activities/fetchRecentActivities',
   async (limit: number = 10, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/v1/orders/recent?limit=${limit}`);
-      // For now, we only have order-related activities.
+                  const response = await api.get(`/orders/recent?limit=${limit}`);      // For now, we only have order-related activities.
       // In a real scenario, this might be a combined endpoint or multiple calls.
       const orderActivities: Activity[] = response.data.map((order: any) => ({
         id: order.id,
