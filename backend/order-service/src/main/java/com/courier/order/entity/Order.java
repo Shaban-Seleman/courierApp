@@ -28,6 +28,8 @@ public class Order {
 
     private UUID driverId; // Assigned driver
 
+    private String driverName; // Denormalized driver name
+
     @Column(nullable = false)
     private String pickupAddress;
 

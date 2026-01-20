@@ -27,42 +27,33 @@ export const driverService = {
   },
   
   uploadPoD: async (orderId: string, signatureBase64: string) => {
-    // Convert base64 to Blob/File for upload if backend expects multipart
-    // For React Native, we typically use FormData with uri/type/name
-    
-    // NOTE: This implementation assumes the backend expects multipart/form-data
-    // You might need a utility to convert the base64 signature to a file object 
-    // compatible with React Native's FormData.
-    
-    // Placeholder for simple implementation:
     const formData = new FormData();
     formData.append('orderId', orderId);
     
-    // Remove header if present (data:image/png;base64,...)
-    const cleanSignature = signatureBase64.replace('data:image/png;base64,', '');
-    
+    // For React Native, when using base64 for file upload, the 'uri' should correctly represent
+    // the data type. The `react-native-signature-canvas` returns a data URI.
+    // Spring's MultipartFile can often handle this directly if the data is correctly encoded.
+
+    // Using signatureBase64 for both signature and a placeholder photo for now
     formData.append('signature', {
-        uri: `data:image/png;base64,${cleanSignature}`,
+        uri: signatureBase64, // This is already a data URI (data:image/png;base64,...)
         type: 'image/png',
         name: 'signature.png'
     } as any); 
     
-    // Dummy photo
+    // Placeholder photo: use a default asset or another input if a real photo is required
+    // For now, we'll reuse the signature as a placeholder for the photo as well.
     formData.append('photo', {
-        uri: `data:image/png;base64,${cleanSignature}`, // Reusing sig as placeholder
+        uri: signatureBase64, 
         type: 'image/png',
         name: 'photo.jpg'
     } as any);
 
-    const response = await api.post('/pod', formData, {
+    const response = await api.post('/api/v1/pod', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
-        },
-        transformRequest: (data: any) => data,
+        }
     });
-    return response.data;
-  }
-};
     return response.data;
   }
 };

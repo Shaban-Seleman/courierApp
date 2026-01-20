@@ -52,4 +52,9 @@ public class OrderController {
             @PathVariable UUID driverId) {
         return ResponseEntity.ok(orderService.assignDriver(id, driverId));
     }
+
+    @GetMapping("/recent")
+    public ResponseEntity<List<Order>> getRecentActivities(@RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(orderService.getRecentOrderActivities(limit));
+    }
 }

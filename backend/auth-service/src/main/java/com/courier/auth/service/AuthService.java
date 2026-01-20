@@ -102,4 +102,10 @@ public class AuthService {
             }
         }
     }
+
+    public UserDto getUserById(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole().name());
+    }
 }

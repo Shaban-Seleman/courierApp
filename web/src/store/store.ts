@@ -3,6 +3,7 @@ import authReducer from './slices/authSlice';
 import orderReducer from './slices/orderSlice';
 import driverReducer from './slices/driverSlice';
 import trackingReducer from './slices/trackingSlice';
+import activityReducer from './slices/activitySlice'; // Import the new activity reducer
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     orders: orderReducer,
     driver: driverReducer,
     tracking: trackingReducer,
+    activities: activityReducer, // Add the activity reducer
   },
 });
 

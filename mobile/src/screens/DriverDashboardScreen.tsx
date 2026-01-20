@@ -22,8 +22,9 @@ const DriverDashboardScreen = () => {
       if (userProfile.status === 'ONLINE') {
         const assignedOrders = await driverService.getAssignedOrders();
         setOrders(assignedOrders);
-        // Start tracking if online
+        const pickedUpOrder = assignedOrders.find((o: any) => o.status === 'PICKED_UP');
         trackingService.connect(userProfile.userId);
+        trackingService.startLocationTracking(pickedUpOrder ? pickedUpOrder.id : null);
       } else {
         setOrders([]);
         trackingService.stop();
@@ -61,6 +62,8 @@ const DriverDashboardScreen = () => {
         trackingService.connect(updatedProfile.userId);
         const assignedOrders = await driverService.getAssignedOrders();
         setOrders(assignedOrders);
+        const pickedUpOrder = assignedOrders.find((o: any) => o.status === 'PICKED_UP');
+        trackingService.startLocationTracking(pickedUpOrder ? pickedUpOrder.id : null);
       } else {
         trackingService.stop();
         setOrders([]);

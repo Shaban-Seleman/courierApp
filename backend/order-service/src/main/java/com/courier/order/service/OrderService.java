@@ -1,5 +1,7 @@
 package com.courier.order.service;
 
+import com.courier.order.client.UserClient;
+import com.courier.order.dto.UserDto;
 import com.courier.order.config.RabbitMQConfig;
 import com.courier.order.dto.CreateOrderRequest;
 import com.courier.order.entity.Order;
@@ -7,6 +9,8 @@ import com.courier.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +24,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final RabbitTemplate rabbitTemplate;
+    private final UserClient userClient;
 
     @Transactional
     public Order createOrder(CreateOrderRequest request, String customerId) {
@@ -64,6 +69,22 @@ public class OrderService {
         }
 
         order.setDriverId(driverId);
+        
+        try {
+            UserDto driver = userClient.getUserById(driverId);
+            if (driver != null) {
+                log.info("Fetched driver details: {}", driver);
+                order.setDriverName(driver.fullName());
+            } else {
+                log.warn("Driver details fetched are null for id: {}", driverId);
+            }
+        } catch (feign.FeignException.NotFound e) {
+             log.warn("Driver with ID {} not found in Auth Service. Using default name.", driverId);
+             order.setDriverName("Unknown Driver");
+        } catch (Exception e) {
+            log.error("Failed to fetch driver name for id: {}. Error: {}", driverId, e.getMessage(), e);
+        }
+
         order.setStatus(Order.OrderStatus.ASSIGNED);
         return orderRepository.save(order);
     }
@@ -78,6 +99,11 @@ public class OrderService {
 
     public List<Order> getDriverOrders(String driverId) {
         return orderRepository.findByDriverId(UUID.fromString(driverId));
+    }
+
+    public List<Order> getRecentOrderActivities(int limit) {
+        // Use PageRequest to limit the number of results and sort by creation date descending
+        return orderRepository.findTopByOrderByCreatedAtDesc(PageRequest.of(0, limit, Sort.by("createdAt").descending()));
     }
 
     private void validateTransition(Order.OrderStatus current, Order.OrderStatus next) {

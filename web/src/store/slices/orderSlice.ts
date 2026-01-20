@@ -13,6 +13,7 @@ export interface Order {
     id: string;
     customerId: string;
     driverId?: string;
+    driverName?: string;
     pickupAddress: string;
     deliveryAddress: string;
     packageDescription: string;

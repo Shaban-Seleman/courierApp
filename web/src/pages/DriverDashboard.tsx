@@ -39,7 +39,7 @@ const DriverDashboard = () => {
 
     const handleAcceptOrder = (orderId: string) => {
         if (!profile) return;
-        dispatch(assignDriver({ orderId, driverId: profile.id }));
+        dispatch(assignDriver({ orderId, driverId: profile.userId }));
     };
 
     const handleUpdateOrderStatus = (orderId: string, status: OrderStatus) => {
