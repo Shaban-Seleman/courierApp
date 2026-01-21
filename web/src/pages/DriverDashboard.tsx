@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store/store';
 import { fetchDriverProfile, createDriverProfile, toggleDriverStatus, DriverStatus } from '../store/slices/driverSlice';
 import { fetchAvailableOrders, fetchDriverOrders, assignDriver, updateOrderStatus, OrderStatus } from '../store/slices/orderSlice';
-import { MapPin, Truck } from 'lucide-react';
+import { fetchDriverStats } from '../store/slices/analyticsSlice';
+import { MapPin, Truck, TrendingUp, DollarSign, Package } from 'lucide-react';
 
 const DriverDashboard = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { profile, loading: driverLoading } = useSelector((state: RootState) => state.driver);
     const { availableOrders, driverOrders, loading: ordersLoading } = useSelector((state: RootState) => state.orders);
+    const { driverStats } = useSelector((state: RootState) => state.analytics);
     const { user } = useSelector((state: RootState) => state.auth);
 
     const [activeTab, setActiveTab] = useState<'assigned' | 'available'>('assigned');
@@ -23,6 +25,7 @@ const DriverDashboard = () => {
         if (profile) {
             dispatch(fetchDriverOrders());
             dispatch(fetchAvailableOrders());
+            dispatch(fetchDriverStats(profile.userId)); // Fetch stats using userId
         }
     }, [dispatch, profile]);
 
@@ -89,7 +92,7 @@ const DriverDashboard = () => {
     return (
         <div className="space-y-6">
             {/* Status Header */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <h2 className="text-xl font-bold text-slate-800">Welcome, {user?.fullName}</h2>
                     <p className="text-slate-500 text-sm">Vehicle: {profile.vehicleType} - {profile.licensePlate}</p>
@@ -112,6 +115,37 @@ const DriverDashboard = () => {
                     >
                         {profile.status === DriverStatus.ONLINE ? 'Go Offline' : 'Go Online'}
                     </button>
+                </div>
+            </div>
+
+            {/* Analytics Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4">
+                    <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                        <Package size={24} />
+                    </div>
+                    <div>
+                        <p className="text-sm text-slate-500 font-medium">Total Deliveries</p>
+                        <h3 className="text-2xl font-bold text-slate-800">{driverStats?.totalDeliveries || 0}</h3>
+                    </div>
+                </div>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4">
+                    <div className="p-3 bg-green-50 text-green-600 rounded-lg">
+                        <DollarSign size={24} />
+                    </div>
+                    <div>
+                        <p className="text-sm text-slate-500 font-medium">Earnings</p>
+                        <h3 className="text-2xl font-bold text-slate-800">${driverStats?.totalEarnings || 0}</h3>
+                    </div>
+                </div>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4">
+                    <div className="p-3 bg-purple-50 text-purple-600 rounded-lg">
+                        <TrendingUp size={24} />
+                    </div>
+                    <div>
+                        <p className="text-sm text-slate-500 font-medium">Rating</p>
+                        <h3 className="text-2xl font-bold text-slate-800">{driverStats?.averageRating || 'N/A'}</h3>
+                    </div>
                 </div>
             </div>
 

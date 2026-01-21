@@ -4,6 +4,20 @@ server:
 spring:
   application:
     name: payment-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/payment_db
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  rabbitmq:
+    host: localhost
+    port: 5672
 
 eureka:
   client:
@@ -15,6 +29,10 @@ spring:
   config:
     activate:
       on-profile: docker
+  datasource:
+    url: jdbc:postgresql://postgres:5432/payment_db
+  rabbitmq:
+    host: rabbitmq
 eureka:
   client:
     service-url:

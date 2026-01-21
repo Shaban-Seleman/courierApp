@@ -25,7 +25,7 @@ const formatTimeAgo = (timestamp: string) => {
 
 const ActivityList = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { activities, loading, error } = useSelector((state: RootState) => state.activities);
+  const { activities, loading, error } = useSelector((state: RootState) => state.activity);
 
   useEffect(() => {
     dispatch(fetchRecentActivities(5)); // Fetch top 5 recent activities
@@ -44,12 +44,12 @@ const ActivityList = () => {
         {activities.length === 0 ? (
           <div className="text-center text-slate-500">No recent activities.</div>
         ) : (
-          activities.map((activity) => (
+          activities.map((activity: any) => (
             <div key={activity.id} className="flex items-start border-b border-slate-50 pb-3 last:border-0 last:pb-0">
               <div className="w-2 h-2 mt-2 rounded-full bg-blue-500 mr-3 flex-shrink-0" />
               <div>
-                <p className="text-sm text-slate-700">{activity.description}</p>
-                <p className="text-xs text-slate-400 mt-1">{formatTimeAgo(activity.timestamp)}</p>
+                <p className="text-sm text-slate-700">{activity.description || `Order #${activity.id.slice(0,8)} ${activity.status}`}</p>
+                <p className="text-xs text-slate-400 mt-1">{formatTimeAgo(activity.createdAt || activity.timestamp)}</p>
               </div>
             </div>
           ))

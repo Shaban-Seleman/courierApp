@@ -102,8 +102,9 @@ public class OrderService {
     }
 
     public List<Order> getRecentOrderActivities(int limit) {
-        // Use PageRequest to limit the number of results and sort by creation date descending
-        return orderRepository.findTopByOrderByCreatedAtDesc(PageRequest.of(0, limit, Sort.by("createdAt").descending()));
+        // Use PageRequest to limit the number of results and sort by updatedAt descending
+        // This ensures we see recent status changes, not just new orders
+        return orderRepository.findByOrderByUpdatedAtDesc(PageRequest.of(0, limit, Sort.by("updatedAt").descending()));
     }
 
     private void validateTransition(Order.OrderStatus current, Order.OrderStatus next) {

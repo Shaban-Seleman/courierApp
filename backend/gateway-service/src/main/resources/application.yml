@@ -66,6 +66,28 @@ spring:
           filters:
             - name: JwtAuthenticationFilter
 
+        # Payment Service (Protected - Create Intent)
+        - id: payment-service-protected
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/v1/payments/create-intent
+          filters:
+            - name: JwtAuthenticationFilter
+        
+        # Payment Service (Public - Webhooks)
+        - id: payment-service-public
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/v1/payments/webhook
+
+        # Analytics Service (Protected)
+        - id: analytics-service
+          uri: lb://ANALYTICS-SERVICE
+          predicates:
+            - Path=/api/v1/analytics/**
+          filters:
+            - name: JwtAuthenticationFilter
+
 jwt:
   # Must match Auth Service Secret
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970

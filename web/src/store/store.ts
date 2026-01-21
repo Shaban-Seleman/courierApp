@@ -2,16 +2,18 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import orderReducer from './slices/orderSlice';
 import driverReducer from './slices/driverSlice';
-import trackingReducer from './slices/trackingSlice';
-import activityReducer from './slices/activitySlice'; // Import the new activity reducer
+import activityReducer from './slices/activitySlice';
+import analyticsReducer from './slices/analyticsSlice';
+import paymentReducer from './slices/paymentSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     orders: orderReducer,
     driver: driverReducer,
-    tracking: trackingReducer,
-    activities: activityReducer, // Add the activity reducer
+    activity: activityReducer,
+    analytics: analyticsReducer,
+    payment: paymentReducer,
   },
 });
 

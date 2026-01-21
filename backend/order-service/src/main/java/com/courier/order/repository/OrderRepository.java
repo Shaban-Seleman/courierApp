@@ -11,6 +11,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     List<Order> findByCustomerId(UUID customerId);
     List<Order> findByDriverId(UUID driverId);
     List<Order> findByStatus(Order.OrderStatus status);
-    List<Order> findTopByOrderByCreatedAtDesc(Pageable pageable); // Corrected method signature
+    List<Order> findTopByOrderByCreatedAtDesc(Pageable pageable);
+    List<Order> findByOrderByUpdatedAtDesc(Pageable pageable);
 }
 
