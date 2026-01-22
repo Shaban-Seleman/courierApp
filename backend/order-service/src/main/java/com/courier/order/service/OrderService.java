@@ -89,8 +89,14 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public List<Order> getMyOrders(String customerId) {
-        return orderRepository.findByCustomerId(UUID.fromString(customerId));
+    public List<Order> getOrders(String userId, String role) {
+        if ("ADMIN".equals(role)) {
+            return orderRepository.findAll(Sort.by("createdAt").descending());
+        } else if ("DRIVER".equals(role)) {
+            return orderRepository.findByDriverId(UUID.fromString(userId));
+        } else {
+            return orderRepository.findByCustomerId(UUID.fromString(userId));
+        }
     }
 
     public List<Order> getAvailableOrders() {

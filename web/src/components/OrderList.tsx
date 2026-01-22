@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store/store';
-import { fetchMyOrders, OrderStatus } from '../store/slices/orderSlice';
+import { fetchOrders, OrderStatus } from '../store/slices/orderSlice';
 import { MapPin, LocateFixed, XCircle, CreditCard } from 'lucide-react';
 import PaymentModal from './PaymentModal';
 
@@ -11,16 +11,16 @@ interface OrderListProps {
 
 const OrderList = ({ setOrderIdToTrack }: OrderListProps) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { myOrders, loading, error } = useSelector((state: RootState) => state.orders);
+  const { ordersList, loading, error } = useSelector((state: RootState) => state.orders);
   
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<string | null>(null);
 
   useEffect(() => {
-    dispatch(fetchMyOrders());
+    dispatch(fetchOrders());
   }, [dispatch]);
 
   const handlePaymentSuccess = () => {
-    dispatch(fetchMyOrders()); // Refresh orders to update status if backend changes it
+    dispatch(fetchOrders()); // Refresh orders to update status if backend changes it
     setSelectedOrderForPayment(null);
   };
 
@@ -47,14 +47,14 @@ const OrderList = ({ setOrderIdToTrack }: OrderListProps) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {myOrders.length === 0 ? (
+            {ordersList.length === 0 ? (
                 <tr>
                     <td colSpan={8} className="px-6 py-8 text-center text-slate-500">
                         No orders found. Start by creating a new shipment!
                     </td>
                 </tr>
             ) : (
-                myOrders.map((order) => (
+                ordersList.map((order) => (
                 <tr key={order.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 font-medium text-slate-700">#{order.id.slice(0, 8)}</td>
                     <td className="px-6 py-4 text-slate-600">{order.packageDescription}</td>

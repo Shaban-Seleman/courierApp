@@ -85,7 +85,7 @@ const DriverDashboardScreen = () => {
         <View className="flex-row justify-between items-center mb-6">
           <View>
             <Text className="text-gray-500 text-sm font-medium">Welcome back,</Text>
-            <Text className="text-2xl font-bold text-gray-800">{profile?.userId || 'Driver'}</Text>
+            <Text className="text-2xl font-bold text-gray-800">{profile?.fullName || profile?.userId || 'Driver'}</Text>
           </View>
           <TouchableOpacity onPress={handleLogout}>
              <Text className="text-red-500 font-semibold">Logout</Text>

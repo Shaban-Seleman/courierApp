@@ -12,12 +12,12 @@ const StatsCards = () => {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        // For admin dashboard, we might want 'all' orders, but currently we have 'getMyOrders' 
+        // For admin dashboard, we might want 'all' orders, but currently we have 'getOrders' 
         // which returns orders for the logged-in user. 
         // Assuming the logged-in user is an Admin or we want to show their orders.
         // A real admin endpoint would be /orders/all or similar.
-        // We'll use getMyOrders for now as a proxy or if the user is a manager.
-        const orders = await orderService.getMyOrders(); 
+        // We'll use getOrders for now as a proxy or if the user is a manager.
+        const orders = await orderService.getOrders(); 
         
         const pending = orders.filter((o: any) => o.status === 'PENDING' || o.status === 'ASSIGNED').length;
         const inTransit = orders.filter((o: any) => o.status === 'PICKED_UP').length;

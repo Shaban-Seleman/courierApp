@@ -21,11 +21,12 @@ public class JwtProvider {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
-    public String generateToken(String username, UUID userId, String role) {
+    public String generateToken(String username, UUID userId, String role, String fullName) {
         return Jwts.builder()
                 .subject(username)
                 .claim("userId", userId.toString())
                 .claim("role", role)
+                .claim("fullName", fullName)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSignInKey())

@@ -11,8 +11,13 @@ export const driverService = {
     return response.data;
   },
 
-  toggleStatus: async (status: 'ONLINE' | 'OFFLINE' | 'BUSY') => {
+  updateDriverStatus: async (status: string) => {
     const response = await api.put(`/drivers/status?status=${status}`);
+    return response.data;
+  },
+
+  getAllDrivers: async () => {
+    const response = await api.get('/drivers');
     return response.data;
   }
 };

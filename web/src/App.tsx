@@ -9,6 +9,9 @@ import ResetPassword from './pages/ResetPassword';
 import CreateOrder from './pages/CreateOrder';
 import ProtectedRoute from './components/ProtectedRoute';
 
+import OrdersPage from './pages/OrdersPage';
+import CouriersPage from './pages/CouriersPage';
+
 function App() {
 
   return (
@@ -32,7 +35,8 @@ function App() {
                     <Routes>
                       <Route path="/" element={<Dashboard />} />
                       <Route path="/orders/new" element={<CreateOrder />} />
-                      <Route path="/orders" element={<div className="p-10 text-center text-slate-500">Orders List (Use existing component)</div>} />
+                      <Route path="/orders" element={<OrdersPage />} />
+                      <Route path="/couriers" element={<CouriersPage />} />
                       <Route path="/map" element={<div className="p-10 text-center text-slate-500">Full Map (Coming Soon)</div>} />
                       {/* Add other protected routes here */}
                     </Routes>

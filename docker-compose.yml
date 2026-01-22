@@ -146,6 +146,10 @@ services:
         condition: service_started
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
 
   tracking-service:
     build:

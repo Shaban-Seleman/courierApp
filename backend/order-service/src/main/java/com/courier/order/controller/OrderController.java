@@ -25,8 +25,10 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Order>> getMyOrders(@RequestHeader("X-User-Id") String userId) {
-        return ResponseEntity.ok(orderService.getMyOrders(userId));
+    public ResponseEntity<List<Order>> getOrders(
+            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader(value = "X-User-Role", defaultValue = "CUSTOMER") String role) {
+        return ResponseEntity.ok(orderService.getOrders(userId, role));
     }
 
     @GetMapping("/available")

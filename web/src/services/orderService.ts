@@ -6,7 +6,7 @@ export const orderService = {
     return response.data;
   },
 
-  getMyOrders: async () => {
+  getOrders: async () => {
     const response = await api.get('/orders');
     return response.data;
   },

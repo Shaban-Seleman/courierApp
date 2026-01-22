@@ -59,7 +59,7 @@ export const toggleDriverStatus = createAsyncThunk(
     'driver/toggleStatus',
     async (status: DriverStatus, { rejectWithValue }) => {
         try {
-            return await driverService.toggleStatus(status);
+            return await driverService.updateDriverStatus(status);
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || 'Failed to update status');
         }

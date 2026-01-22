@@ -23,7 +23,7 @@ export interface Order {
 }
 
 interface OrderState {
-    myOrders: Order[];
+    ordersList: Order[];
     availableOrders: Order[];
     driverOrders: Order[]; // Orders assigned to me (as a driver)
     currentOrder: Order | null;
@@ -32,7 +32,7 @@ interface OrderState {
 }
 
 const initialState: OrderState = {
-    myOrders: [],
+    ordersList: [],
     availableOrders: [],
     driverOrders: [],
     currentOrder: null,
@@ -41,13 +41,13 @@ const initialState: OrderState = {
 };
 
 // Async Thunks
-export const fetchMyOrders = createAsyncThunk(
-    'orders/fetchMyOrders',
+export const fetchOrders = createAsyncThunk(
+    'orders/fetchOrders',
     async (_, { rejectWithValue }) => {
         try {
-            return await orderService.getMyOrders();
+            return await orderService.getOrders();
         } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to fetch my orders');
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
         }
     }
 );
@@ -120,13 +120,13 @@ const orderSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Fetch My Orders
-            .addCase(fetchMyOrders.pending, (state) => {
+            // Fetch Orders
+            .addCase(fetchOrders.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(fetchMyOrders.fulfilled, (state, action) => {
+            .addCase(fetchOrders.fulfilled, (state, action) => {
                 state.loading = false;
-                state.myOrders = action.payload;
+                state.ordersList = action.payload;
             })
             // Fetch Available Orders
             .addCase(fetchAvailableOrders.fulfilled, (state, action) => {
@@ -138,7 +138,7 @@ const orderSlice = createSlice({
             })
             // Create
             .addCase(createOrder.fulfilled, (state, action) => {
-                state.myOrders.push(action.payload);
+                state.ordersList.push(action.payload);
             })
             // Update Status
             .addCase(updateOrderStatus.fulfilled, (state, action) => {
@@ -147,13 +147,13 @@ const orderSlice = createSlice({
                     const index = list.findIndex(o => o.id === action.payload.id);
                     if (index !== -1) list[index] = action.payload;
                 };
-                updateInList(state.myOrders);
+                updateInList(state.ordersList);
                 updateInList(state.driverOrders);
                 updateInList(state.availableOrders);
             })
             // Assign Driver
             .addCase(assignDriver.fulfilled, (state, action) => {
-                // Remove from available, add to driver orders (if it's me), update myOrders
+                // Remove from available, add to driver orders (if it's me), update ordersList
                  state.availableOrders = state.availableOrders.filter(o => o.id !== action.payload.id);
                  state.driverOrders.push(action.payload);
             });

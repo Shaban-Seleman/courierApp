@@ -23,6 +23,7 @@ public class Driver {
     @Column(nullable = false, unique = true)
     private UUID userId; // Links to Auth Service User
 
+    private String fullName;
     private String vehicleType;
     private String licensePlate;
 

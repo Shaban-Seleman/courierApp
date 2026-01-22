@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -16,11 +17,17 @@ public class DriverController {
 
     private final DriverService driverService;
 
+    @GetMapping
+    public ResponseEntity<List<Driver>> getAllDrivers() {
+        return ResponseEntity.ok(driverService.getAllDrivers());
+    }
+
     @PostMapping("/profile")
     public ResponseEntity<Driver> createProfile(
             @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-Name") String fullName,
             @RequestBody DriverProfileRequest request) {
-        return ResponseEntity.ok(driverService.createProfile(UUID.fromString(userId), request));
+        return ResponseEntity.ok(driverService.createProfile(UUID.fromString(userId), fullName, request));
     }
 
     @GetMapping("/profile")
