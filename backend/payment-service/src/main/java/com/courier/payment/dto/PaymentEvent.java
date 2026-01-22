@@ -1,9 +1,8 @@
 package com.courier.payment.dto;
 
-import java.util.Map;
+import java.util.UUID;
 
 public record PaymentEvent(
-    String id,
-    String type,
-    PaymentData data
+    UUID orderId,
+    String status
 ) {}

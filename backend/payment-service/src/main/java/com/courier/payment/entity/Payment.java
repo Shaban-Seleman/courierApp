@@ -29,9 +29,13 @@ public class Payment {
     @Column(nullable = false)
     private BigDecimal amount;
 
+    @Column(nullable = false)
     private String currency;
 
-    private String status; // PENDING, COMPLETED, FAILED
+    private String stripePaymentIntentId;
+
+    @Column(nullable = false)
+    private String status;
 
     private String paymentIntentId;
 
