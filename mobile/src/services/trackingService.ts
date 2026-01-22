@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // In React Native (and mobile in general), WebSockets need the IP address, not 'localhost'
 // Update this to match your authService API_URL config but with ws:// protocol
 // e.g., 'ws://192.168.1.100:8080/ws/websocket'
-const WS_URL = 'ws://192.168.1.100:8080/ws/websocket';
+const WS_URL = 'ws://localhost:8080/ws-tracking/websocket';
 
 class TrackingService {
   client: Client | null = null;
@@ -30,7 +30,7 @@ class TrackingService {
 
     this.client.onConnect = () => {
       console.log('Mobile connected to Tracking WS');
-      this.startLocationTracking();
+      // Tracking is started via specific call from Dashboard when "Online"
     };
 
     this.client.onStompError = (frame) => {
@@ -58,11 +58,11 @@ class TrackingService {
                 driverId: this.driverId,
                 latitude: lat,
                 longitude: lng,
-                orderId: activeOrderId // Use the provided activeOrderId
+                orderId: activeOrderId
             };
 
             this.client.publish({
-                destination: '/app/courier-location',
+                destination: '/app/update',
                 body: JSON.stringify(payload),
                 headers: {
                     'content-type': 'application/json'

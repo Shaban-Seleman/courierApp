@@ -24,7 +24,7 @@ class TrackingService {
         this.rejectConnection = reject;
 
         this.client = new Client({
-            brokerURL: 'ws://localhost:8080/ws/websocket', // Use correct WS protocol
+            brokerURL: 'ws://localhost:8080/ws-tracking/websocket', // Use correct WS protocol
             connectHeaders: {
                 Authorization: `Bearer ${token}`,
             },

@@ -27,6 +27,11 @@ public class DeliveryEventListener {
         }
     }
 
+    @RabbitListener(queues = RabbitMQConfig.ORDER_CREATED_QUEUE)
+    public void handleOrderCreated(OrderEventDto orderEvent) {
+        log.info("Analytics received order created: {}", orderEvent);
+    }
+
     private void updateCourierStats(UUID driverId) {
         CourierStats stats = courierStatsRepository.findByDriverId(driverId)
                 .orElse(CourierStats.builder()

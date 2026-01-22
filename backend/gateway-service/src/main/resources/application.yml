@@ -56,7 +56,7 @@ spring:
         - id: tracking-ws
           uri: lb://TRACKING-SERVICE
           predicates:
-            - Path=/ws/**
+            - Path=/ws-tracking/**
 
         # PoD Service (Protected)
         - id: pod-service
