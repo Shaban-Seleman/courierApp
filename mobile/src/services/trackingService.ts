@@ -1,9 +1,7 @@
 import { Client } from '@stomp/stompjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// In React Native (and mobile in general), WebSockets need the IP address, not 'localhost'
-// Update this to match your authService API_URL config but with ws:// protocol
-// e.g., 'ws://192.168.1.100:8080/ws/websocket'
+// Replace with 'ws://10.0.2.2:8080/ws-tracking/websocket' for Android Emulator
 const WS_URL = 'ws://localhost:8080/ws-tracking/websocket';
 
 class TrackingService {
