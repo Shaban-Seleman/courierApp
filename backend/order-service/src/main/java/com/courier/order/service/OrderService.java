@@ -89,6 +89,21 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    @Transactional
+    public Order updatePoDInfo(UUID orderId, String photoUrl, String signatureUrl) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        order.setPhotoUrl(photoUrl);
+        order.setSignatureUrl(signatureUrl);
+        order.setStatus(Order.OrderStatus.DELIVERED);
+        
+        Order updatedOrder = orderRepository.save(order);
+        rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_EXCHANGE, "order.updated", updatedOrder);
+        
+        return updatedOrder;
+    }
+
     public List<Order> getOrders(String userId, String role) {
         if ("ADMIN".equals(role)) {
             return orderRepository.findAll(Sort.by("createdAt").descending());

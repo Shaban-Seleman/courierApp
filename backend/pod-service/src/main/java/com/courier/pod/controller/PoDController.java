@@ -1,5 +1,6 @@
 package com.courier.pod.controller;
 
+import com.courier.pod.entity.ProofOfDelivery;
 import com.courier.pod.service.PoDService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -16,13 +17,12 @@ public class PoDController {
 
     private final PoDService podService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> uploadPoD(
-            @RequestParam("orderId") UUID orderId,
-            @RequestParam("photo") MultipartFile photo,
-            @RequestParam("signature") MultipartFile signature) {
+    @PostMapping(value = "/upload/{orderId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProofOfDelivery> uploadPoD(
+            @PathVariable UUID orderId,
+            @RequestPart("photo") MultipartFile photo,
+            @RequestPart("signature") MultipartFile signature) {
         
-        podService.uploadPoD(orderId, photo, signature);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(podService.uploadPoD(orderId, photo, signature));
     }
 }

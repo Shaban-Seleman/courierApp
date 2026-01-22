@@ -49,6 +49,9 @@ public class Order {
     @UpdateTimestamp
     private Instant updatedAt;
 
+    private String photoUrl;
+    private String signatureUrl;
+
     public enum OrderStatus {
         PENDING,
         ASSIGNED,

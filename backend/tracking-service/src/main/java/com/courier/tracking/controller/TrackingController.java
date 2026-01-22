@@ -9,7 +9,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/tracking")
+@RequestMapping("/api/v1/tracking")
 @RequiredArgsConstructor
 public class TrackingController {
 
