@@ -21,4 +21,9 @@ public class AnalyticsController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping
+    public ResponseEntity<java.util.List<CourierStats>> getAllStats() {
+        return ResponseEntity.ok(courierStatsRepository.findAll());
+    }
 }

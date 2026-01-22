@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store/store';
-import { fetchOrders, OrderStatus } from '../store/slices/orderSlice';
-import { MapPin, LocateFixed, XCircle, CreditCard } from 'lucide-react';
+import { fetchOrders, OrderStatus, Order } from '../store/slices/orderSlice';
+import { MapPin, LocateFixed, XCircle, CreditCard, FileText } from 'lucide-react';
 import PaymentModal from './PaymentModal';
+import PoDModal from './PoDModal';
 
 interface OrderListProps {
   setOrderIdToTrack: (orderId: string | undefined) => void;
@@ -14,6 +15,7 @@ const OrderList = ({ setOrderIdToTrack }: OrderListProps) => {
   const { ordersList, loading, error } = useSelector((state: RootState) => state.orders);
   
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<string | null>(null);
+  const [selectedOrderForPoD, setSelectedOrderForPoD] = useState<Order | null>(null);
 
   useEffect(() => {
     dispatch(fetchOrders());
@@ -107,7 +109,7 @@ const OrderList = ({ setOrderIdToTrack }: OrderListProps) => {
                         <XCircle size={20} />
                       </button>
                       
-                      {/* Payment Button - Simple Logic: if PENDING, allow payment */}
+                      {/* Payment Button */}
                       {order.status === OrderStatus.PENDING && (
                         <button
                           onClick={() => setSelectedOrderForPayment(order.id)}
@@ -115,6 +117,17 @@ const OrderList = ({ setOrderIdToTrack }: OrderListProps) => {
                           title="Pay for Order"
                         >
                           <CreditCard size={20} />
+                        </button>
+                      )}
+
+                      {/* PoD Button */}
+                      {order.status === OrderStatus.DELIVERED && (
+                        <button
+                          onClick={() => setSelectedOrderForPoD(order)}
+                          className="p-1 text-purple-600 hover:text-purple-800 rounded flex items-center gap-1"
+                          title="View Proof of Delivery"
+                        >
+                          <FileText size={20} />
                         </button>
                       )}
                     </div>
@@ -132,6 +145,14 @@ const OrderList = ({ setOrderIdToTrack }: OrderListProps) => {
             isOpen={!!selectedOrderForPayment}
             onClose={() => setSelectedOrderForPayment(null)}
             onSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {selectedOrderForPoD && (
+        <PoDModal 
+            order={selectedOrderForPoD}
+            isOpen={!!selectedOrderForPoD}
+            onClose={() => setSelectedOrderForPoD(null)}
         />
       )}
     </div>

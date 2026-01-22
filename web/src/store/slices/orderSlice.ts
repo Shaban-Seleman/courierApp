@@ -20,6 +20,8 @@ export interface Order {
     status: OrderStatus;
     createdAt: string;
     updatedAt: string;
+    photoUrl?: string;
+    signatureUrl?: string;
 }
 
 interface OrderState {

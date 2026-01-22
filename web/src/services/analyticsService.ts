@@ -5,6 +5,11 @@ export const analyticsService = {
     const response = await api.get(`/analytics/drivers/${driverId}`);
     return response.data;
   },
+
+  getAllStats: async () => {
+    const response = await api.get('/analytics');
+    return response.data;
+  },
   
   // Future: Get system-wide stats for Admin
   getSystemStats: async () => {
