@@ -2,7 +2,7 @@ import { Client } from '@stomp/stompjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Replace with 'ws://10.0.2.2:8080/ws-tracking/websocket' for Android Emulator
-const WS_URL = 'ws://localhost:8080/ws-tracking/websocket';
+const WS_URL = 'ws://192.168.0.177:8080/ws-tracking/websocket';
 
 class TrackingService {
   client: Client | null = null;

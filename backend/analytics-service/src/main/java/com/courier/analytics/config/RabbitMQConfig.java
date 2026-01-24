@@ -13,18 +13,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String ORDER_CREATED_QUEUE = "order.created.queue";
-    public static final String ORDER_UPDATED_QUEUE = "order.updated.queue";
+    public static final String ANALYTICS_QUEUE = "analytics.order.events";
     public static final String ORDER_EXCHANGE = "order.exchange";
 
     @Bean
-    public Queue orderCreatedQueue() {
-        return new Queue(ORDER_CREATED_QUEUE);
-    }
-
-    @Bean
-    public Queue orderUpdatedQueue() {
-        return new Queue(ORDER_UPDATED_QUEUE);
+    public Queue analyticsQueue() {
+        return new Queue(ANALYTICS_QUEUE);
     }
 
     @Bean
@@ -33,17 +27,17 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding bindingCreated(Queue orderCreatedQueue, TopicExchange orderExchange) {
-        return BindingBuilder.bind(orderCreatedQueue)
+    public Binding bindingCreated(Queue analyticsQueue, TopicExchange orderExchange) {
+        return BindingBuilder.bind(analyticsQueue)
                 .to(orderExchange)
                 .with("order.created");
     }
 
     @Bean
-    public Binding bindingUpdated(Queue orderUpdatedQueue, TopicExchange orderExchange) {
-        return BindingBuilder.bind(orderUpdatedQueue)
+    public Binding bindingDelivered(Queue analyticsQueue, TopicExchange orderExchange) {
+        return BindingBuilder.bind(analyticsQueue)
                 .to(orderExchange)
-                .with("order.updated");
+                .with("order.delivered");
     }
 
     @Bean

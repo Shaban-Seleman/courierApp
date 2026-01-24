@@ -35,6 +35,8 @@ public class PoDService {
     @Transactional
     public ProofOfDelivery uploadPoD(UUID orderId, MultipartFile photo, MultipartFile signature) {
         try {
+            ensureBucketExists();
+
             String photoUrl = uploadFile(photo, "photos/" + orderId + "-photo-" + photo.getOriginalFilename());
             String signatureUrl = uploadFile(signature, "signatures/" + orderId + "-signature-" + signature.getOriginalFilename());
 
@@ -58,6 +60,20 @@ public class PoDService {
         } catch (Exception e) {
             log.error("Failed to upload PoD for order {}: {}", orderId, e.getMessage());
             throw new RuntimeException("Failed to upload PoD", e);
+        }
+    }
+
+    private void ensureBucketExists() {
+        try {
+            boolean found = minioClient.bucketExists(io.minio.BucketExistsArgs.builder().bucket(bucketName).build());
+            if (!found) {
+                minioClient.makeBucket(io.minio.MakeBucketArgs.builder().bucket(bucketName).build());
+                log.info("Bucket '{}' created.", bucketName);
+            }
+        } catch (Exception e) {
+            log.error("Error checking/creating bucket: {}", e.getMessage());
+            // Don't throw here, let upload fail if it must, or throw to stop early.
+            // But if check fails, upload likely will too.
         }
     }
 

@@ -49,7 +49,7 @@ export const driverService = {
         name: 'photo.jpg'
     } as any);
 
-    const response = await api.post(`/api/v1/pod/upload/${orderId}`, formData, {
+    const response = await api.post(`/pod/upload/${orderId}`, formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         }

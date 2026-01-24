@@ -18,18 +18,16 @@ public class DeliveryEventListener {
 
     private final CourierStatsRepository courierStatsRepository;
 
-    @RabbitListener(queues = RabbitMQConfig.ORDER_UPDATED_QUEUE)
-    public void handleOrderUpdated(OrderEventDto orderEvent) {
-        log.info("Analytics received order update: {}", orderEvent);
+    @RabbitListener(queues = RabbitMQConfig.ANALYTICS_QUEUE)
+    public void handleOrderEvent(OrderEventDto orderEvent) {
+        log.info("Analytics received event: {}", orderEvent);
 
         if ("DELIVERED".equals(orderEvent.status()) && orderEvent.driverId() != null) {
             updateCourierStats(orderEvent.driverId());
+        } else if ("PENDING".equals(orderEvent.status()) || "CREATED".equals(orderEvent.status())) {
+            // Handle creation metrics if needed
+            log.info("Order created: {}", orderEvent.id());
         }
-    }
-
-    @RabbitListener(queues = RabbitMQConfig.ORDER_CREATED_QUEUE)
-    public void handleOrderCreated(OrderEventDto orderEvent) {
-        log.info("Analytics received order created: {}", orderEvent);
     }
 
     private void updateCourierStats(UUID driverId) {

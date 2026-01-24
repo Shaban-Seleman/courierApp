@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Replace with 'http://10.0.2.2:8080/api/v1' for Android Emulator
 // Replace with your local IP (e.g., http://192.168.x.x:8080/api/v1) for physical devices
-const API_URL = 'http://localhost:8080/api/v1';
+const API_URL = 'http://192.168.0.177:8080/api/v1';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -25,7 +25,8 @@ api.interceptors.request.use(
 
 export const authService = {
   login: async (username, password) => {
-    const response = await api.post('/auth/login', { username, password });
+    // Backend expects 'email', so we map 'username' to 'email'
+    const response = await api.post('/auth/login', { email: username, password });
     if (response.data.token) {
       await AsyncStorage.setItem('token', response.data.token);
       await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
