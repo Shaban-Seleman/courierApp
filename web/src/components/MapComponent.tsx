@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useState } from 'react';
 import { trackingService } from '../services/trackingService';
@@ -22,6 +22,17 @@ L.Marker.prototype.options.icon = DefaultIcon;
 interface MapComponentProps {
     orderId?: string; // Optional orderId for customer-specific tracking
 }
+
+// Component to handle map re-centering when locations change
+const RecenterMap = ({ locations }: { locations: any[] }) => {
+    const map = useMap();
+    useEffect(() => {
+        if (locations.length > 0) {
+            map.setView([locations[0].latitude, locations[0].longitude], 13);
+        }
+    }, [locations, map]);
+    return null;
+};
 
 const MapComponent = ({ orderId }: MapComponentProps) => {
   const [trackedLocations, setTrackedLocations] = useState<any[]>([]);
@@ -97,6 +108,7 @@ const MapComponent = ({ orderId }: MapComponentProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <RecenterMap locations={trackedLocations} />
         {trackedLocations.map((location) => (
             <Marker key={location.driverId} position={[location.latitude, location.longitude]}>
                 <Popup>

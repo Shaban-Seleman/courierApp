@@ -11,6 +11,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 import OrdersPage from './pages/OrdersPage';
 import CouriersPage from './pages/CouriersPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import MapPage from './pages/MapPage';
 
 function App() {
 
@@ -37,7 +39,8 @@ function App() {
                       <Route path="/orders/new" element={<CreateOrder />} />
                       <Route path="/orders" element={<OrdersPage />} />
                       <Route path="/couriers" element={<CouriersPage />} />
-                      <Route path="/map" element={<div className="p-10 text-center text-slate-500">Full Map (Coming Soon)</div>} />
+                      <Route path="/analytics" element={<AnalyticsPage />} />
+                      <Route path="/map" element={<MapPage />} />
                       {/* Add other protected routes here */}
                     </Routes>
                   </main>

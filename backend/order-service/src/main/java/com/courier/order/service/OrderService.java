@@ -122,10 +122,17 @@ public class OrderService {
         return orderRepository.findByDriverId(UUID.fromString(driverId));
     }
 
-    public List<Order> getRecentOrderActivities(int limit) {
+    public List<Order> getRecentOrderActivities(int limit, String userId, String role) {
         // Use PageRequest to limit the number of results and sort by updatedAt descending
-        // This ensures we see recent status changes, not just new orders
-        return orderRepository.findByOrderByUpdatedAtDesc(PageRequest.of(0, limit, Sort.by("updatedAt").descending()));
+        PageRequest pageRequest = PageRequest.of(0, limit, Sort.by("updatedAt").descending());
+        
+        if ("ADMIN".equals(role)) {
+            return orderRepository.findByOrderByUpdatedAtDesc(pageRequest);
+        } else if ("DRIVER".equals(role)) {
+            return orderRepository.findByDriverIdOrderByUpdatedAtDesc(UUID.fromString(userId), pageRequest);
+        } else {
+            return orderRepository.findByCustomerIdOrderByUpdatedAtDesc(UUID.fromString(userId), pageRequest);
+        }
     }
 
     private void validateTransition(Order.OrderStatus current, Order.OrderStatus next) {

@@ -1,5 +1,6 @@
 import { Client } from '@stomp/stompjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
 
 // Replace with 'ws://10.0.2.2:8080/ws-tracking/websocket' for Android Emulator
 const WS_URL = 'ws://192.168.0.177:8080/ws-tracking/websocket';
@@ -7,7 +8,7 @@ const WS_URL = 'ws://192.168.0.177:8080/ws-tracking/websocket';
 class TrackingService {
   client: Client | null = null;
   driverId: string | null = null;
-  watchId: number | null = null;
+  locationSubscription: Location.LocationSubscription | null = null;
 
   async connect(driverId: string) {
     this.driverId = driverId;
@@ -39,23 +40,29 @@ class TrackingService {
     this.client.activate();
   }
 
-  startLocationTracking(activeOrderId: string | null = null) {
-    // In a real app, use expo-location or react-native-geolocation-service
-    // Here we'll mock location updates
+  async startLocationTracking(activeOrderId: string | null = null) {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      console.error('Permission to access location was denied');
+      return;
+    }
 
-    // Mock movement
-    let lat = 40.7128;
-    let lng = -74.0060;
+    if (this.locationSubscription) {
+        this.locationSubscription.remove();
+    }
 
-    this.watchId = setInterval(() => {
+    this.locationSubscription = await Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.High,
+        timeInterval: 5000,
+        distanceInterval: 10,
+      },
+      (location) => {
         if (this.client && this.client.connected && this.driverId) {
-            lat += 0.0001;
-            lng += 0.0001;
-
             const payload = {
                 driverId: this.driverId,
-                latitude: lat,
-                longitude: lng,
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
                 orderId: activeOrderId
             };
 
@@ -66,15 +73,16 @@ class TrackingService {
                     'content-type': 'application/json'
                 }
             });
-
+            console.log('Sent location update:', payload.latitude, payload.longitude);
         }
-    }, 5000) as unknown as number;
+      }
+    );
   }
 
   stop() {
-    if (this.watchId !== null) {
-      clearInterval(this.watchId);
-      this.watchId = null;
+    if (this.locationSubscription) {
+      this.locationSubscription.remove();
+      this.locationSubscription = null;
     }
     if (this.client) {
       this.client.deactivate();

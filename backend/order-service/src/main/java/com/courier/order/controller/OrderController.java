@@ -56,7 +56,10 @@ public class OrderController {
     }
 
     @GetMapping("/recent")
-    public ResponseEntity<List<Order>> getRecentActivities(@RequestParam(defaultValue = "10") int limit) {
-        return ResponseEntity.ok(orderService.getRecentOrderActivities(limit));
+    public ResponseEntity<List<Order>> getRecentActivities(
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader(value = "X-User-Role", defaultValue = "CUSTOMER") String role) {
+        return ResponseEntity.ok(orderService.getRecentOrderActivities(limit, userId, role));
     }
 }
