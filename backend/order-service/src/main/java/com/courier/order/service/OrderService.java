@@ -122,6 +122,30 @@ public class OrderService {
         return orderRepository.findByDriverId(UUID.fromString(driverId));
     }
 
+    @Transactional
+    public Order rateOrder(UUID orderId, Integer rating, String feedback, String customerId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!order.getCustomerId().equals(UUID.fromString(customerId))) {
+            throw new RuntimeException("You can only rate your own orders");
+        }
+
+        if (order.getStatus() != Order.OrderStatus.DELIVERED) {
+            throw new IllegalStateException("Order must be DELIVERED to be rated");
+        }
+
+        order.setRating(rating);
+        order.setFeedback(feedback);
+
+        Order savedOrder = orderRepository.save(order);
+        
+        // Publish Event for Analytics
+        rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_EXCHANGE, "order.rated", savedOrder);
+        
+        return savedOrder;
+    }
+
     public List<Order> getRecentOrderActivities(int limit, String userId, String role) {
         // Use PageRequest to limit the number of results and sort by updatedAt descending
         PageRequest pageRequest = PageRequest.of(0, limit, Sort.by("updatedAt").descending());

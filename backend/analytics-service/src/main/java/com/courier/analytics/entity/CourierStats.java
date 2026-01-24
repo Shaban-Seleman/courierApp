@@ -27,7 +27,9 @@ public class CourierStats {
 
     private Integer totalDeliveries;
 
-    private Double averageRating; // Placeholder for future rating logic
+    private Double averageRating;
+
+    private Integer totalRatingsCount;
 
     private Double totalEarnings; // Placeholder
 

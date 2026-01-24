@@ -52,6 +52,9 @@ public class Order {
     private String photoUrl;
     private String signatureUrl;
 
+    private Integer rating;
+    private String feedback;
+
     public enum OrderStatus {
         PENDING,
         ASSIGNED,

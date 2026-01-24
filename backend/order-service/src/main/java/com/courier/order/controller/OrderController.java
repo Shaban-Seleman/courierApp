@@ -1,6 +1,7 @@
 package com.courier.order.controller;
 
 import com.courier.order.dto.CreateOrderRequest;
+import com.courier.order.dto.RateOrderRequest;
 import com.courier.order.entity.Order;
 import com.courier.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,14 @@ public class OrderController {
             @PathVariable UUID id,
             @PathVariable UUID driverId) {
         return ResponseEntity.ok(orderService.assignDriver(id, driverId));
+    }
+
+    @PostMapping("/{id}/rate")
+    public ResponseEntity<Order> rateOrder(
+            @PathVariable UUID id,
+            @RequestHeader("X-User-Id") String userId,
+            @RequestBody RateOrderRequest request) {
+        return ResponseEntity.ok(orderService.rateOrder(id, request.rating(), request.feedback(), userId));
     }
 
     @GetMapping("/recent")
