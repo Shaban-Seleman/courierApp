@@ -5,6 +5,7 @@ import { TrendingUp, Star, DollarSign, Package } from 'lucide-react';
 interface CourierStats {
   id: string;
   driverId: string;
+  driverName?: string;
   totalDeliveries: number;
   averageRating: number | null;
   totalEarnings: number | null;
@@ -89,6 +90,7 @@ const AnalyticsPage = () => {
                 <thead className="bg-slate-50 text-slate-500 font-medium">
                     <tr>
                         <th className="px-6 py-4">Driver ID</th>
+                        <th className="px-6 py-4">Driver Name</th>
                         <th className="px-6 py-4">Deliveries</th>
                         <th className="px-6 py-4">Rating</th>
                         <th className="px-6 py-4">Earnings</th>
@@ -99,6 +101,7 @@ const AnalyticsPage = () => {
                     {stats.map((stat) => (
                         <tr key={stat.id} className="hover:bg-slate-50 transition-colors">
                             <td className="px-6 py-4 font-mono text-slate-600">{stat.driverId}</td>
+                            <td className="px-6 py-4 text-slate-800">{stat.driverName || 'Unknown'}</td>
                             <td className="px-6 py-4 font-semibold text-slate-800">{stat.totalDeliveries}</td>
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-1 text-amber-500">
@@ -114,7 +117,7 @@ const AnalyticsPage = () => {
                     ))}
                     {stats.length === 0 && (
                         <tr>
-                            <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                            <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
                                 No analytics data available yet.
                             </td>
                         </tr>

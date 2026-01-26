@@ -5,6 +5,7 @@ import com.courier.pod.dto.PoDUploadedEvent;
 import com.courier.pod.entity.ProofOfDelivery;
 import com.courier.pod.repository.PoDRepository;
 import io.minio.MinioClient;
+import io.minio.SetBucketPolicyArgs;
 import io.minio.PutObjectArgs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,11 +70,33 @@ public class PoDService {
             if (!found) {
                 minioClient.makeBucket(io.minio.MakeBucketArgs.builder().bucket(bucketName).build());
                 log.info("Bucket '{}' created.", bucketName);
+                
+                String policy = "{\n" +
+                        "    \"Version\": \"2012-10-17\",\n" +
+                        "    \"Statement\": [\n" +
+                        "        {\n" +
+                        "            \"Effect\": \"Allow\",\n" +
+                        "            \"Principal\": {\n" +
+                        "                \"AWS\": [\n" +
+                        "                    \"*\"\n" +
+                        "                ]\n" +
+                        "            },\n" +
+                        "            \"Action\": [\n" +
+                        "                \"s3:GetObject\"\n" +
+                        "            ],\n" +
+                        "            \"Resource\": [\n" +
+                        "                \"arn:aws:s3:::" + bucketName + "/*\"\n" +
+                        "            ]\n" +
+                        "        }\n" +
+                        "    ]\n" +
+                        "}";
+
+                minioClient.setBucketPolicy(
+                        SetBucketPolicyArgs.builder().bucket(bucketName).config(policy).build());
+                log.info("Bucket policy set to public read.");
             }
         } catch (Exception e) {
             log.error("Error checking/creating bucket: {}", e.getMessage());
-            // Don't throw here, let upload fail if it must, or throw to stop early.
-            // But if check fails, upload likely will too.
         }
     }
 

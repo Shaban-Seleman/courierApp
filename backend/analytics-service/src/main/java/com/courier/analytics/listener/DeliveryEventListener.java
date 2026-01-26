@@ -24,17 +24,20 @@ public class DeliveryEventListener {
 
         if ("DELIVERED".equals(orderEvent.status()) && orderEvent.driverId() != null) {
             if (orderEvent.rating() != null) {
-                updateDriverRating(orderEvent.driverId(), orderEvent.rating());
+                updateDriverRating(orderEvent.driverId(), orderEvent.driverName(), orderEvent.rating());
             } else {
-                updateCourierStats(orderEvent.driverId());
+                updateCourierStats(orderEvent.driverId(), orderEvent.driverName());
             }
         } else if ("PENDING".equals(orderEvent.status()) || "CREATED".equals(orderEvent.status())) {
             log.info("Order created: {}", orderEvent.id());
         }
     }
 
-    private void updateCourierStats(UUID driverId) {
+    private void updateCourierStats(UUID driverId, String driverName) {
         CourierStats stats = getOrCreateStats(driverId);
+        if (driverName != null) {
+            stats.setDriverName(driverName);
+        }
         stats.setTotalDeliveries(stats.getTotalDeliveries() + 1);
         // Estimate earnings: $15 per delivery
         stats.setTotalEarnings(stats.getTotalEarnings() + 15.0); 
@@ -42,8 +45,11 @@ public class DeliveryEventListener {
         log.info("Updated stats for driver {}: Total Deliveries = {}", driverId, stats.getTotalDeliveries());
     }
 
-    private void updateDriverRating(UUID driverId, Integer newRating) {
+    private void updateDriverRating(UUID driverId, String driverName, Integer newRating) {
         CourierStats stats = getOrCreateStats(driverId);
+        if (driverName != null) {
+            stats.setDriverName(driverName);
+        }
         
         int currentCount = stats.getTotalRatingsCount() == null ? 0 : stats.getTotalRatingsCount();
         double currentAvg = stats.getAverageRating() == null ? 0.0 : stats.getAverageRating();

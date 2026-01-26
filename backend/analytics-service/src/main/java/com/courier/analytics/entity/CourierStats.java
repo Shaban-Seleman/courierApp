@@ -25,6 +25,8 @@ public class CourierStats {
     @Column(nullable = false, unique = true)
     private UUID driverId;
 
+    private String driverName;
+
     private Integer totalDeliveries;
 
     private Double averageRating;

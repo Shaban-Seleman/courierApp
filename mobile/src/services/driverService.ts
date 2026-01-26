@@ -26,27 +26,26 @@ export const driverService = {
     return response.data;
   },
   
-  uploadPoD: async (orderId: string, signatureBase64: string) => {
+  uploadPoD: async (orderId: string, signatureBase64: string, photoUri: string) => {
     const formData = new FormData();
     formData.append('orderId', orderId);
     
-    // For React Native, when using base64 for file upload, the 'uri' should correctly represent
-    // the data type. The `react-native-signature-canvas` returns a data URI.
-    // Spring's MultipartFile can often handle this directly if the data is correctly encoded.
-
-    // Using signatureBase64 for both signature and a placeholder photo for now
+    // Signature (Base64 Data URI)
     formData.append('signature', {
-        uri: signatureBase64, // This is already a data URI (data:image/png;base64,...)
+        uri: signatureBase64, 
         type: 'image/png',
         name: 'signature.png'
     } as any); 
     
-    // Placeholder photo: use a default asset or another input if a real photo is required
-    // For now, we'll reuse the signature as a placeholder for the photo as well.
+    // Photo (File URI)
+    const filename = photoUri.split('/').pop();
+    const match = /\.(\w+)$/.exec(filename || '');
+    const type = match ? `image/${match[1]}` : 'image/jpeg';
+
     formData.append('photo', {
-        uri: signatureBase64, 
-        type: 'image/png',
-        name: 'photo.jpg'
+        uri: photoUri, 
+        type: type,
+        name: filename || 'photo.jpg'
     } as any);
 
     const response = await api.post(`/pod/upload/${orderId}`, formData, {

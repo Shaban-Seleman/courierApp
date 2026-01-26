@@ -27,17 +27,10 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding bindingCreated(Queue analyticsQueue, TopicExchange orderExchange) {
+    public Binding bindingAllOrderEvents(Queue analyticsQueue, TopicExchange orderExchange) {
         return BindingBuilder.bind(analyticsQueue)
                 .to(orderExchange)
-                .with("order.created");
-    }
-
-    @Bean
-    public Binding bindingDelivered(Queue analyticsQueue, TopicExchange orderExchange) {
-        return BindingBuilder.bind(analyticsQueue)
-                .to(orderExchange)
-                .with("order.delivered");
+                .with("order.#");
     }
 
     @Bean

@@ -7,6 +7,7 @@ import java.util.UUID;
 public record OrderEventDto(
     UUID id,
     UUID driverId,
+    String driverName,
     String status,
     Integer rating
 ) {}
