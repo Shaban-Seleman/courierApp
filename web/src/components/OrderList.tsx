@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store/store';
 import { fetchOrders, OrderStatus, Order } from '../store/slices/orderSlice';
-import { MapPin, LocateFixed, XCircle, CreditCard, FileText, Star } from 'lucide-react';
+import { MapPin, LocateFixed, XCircle, CreditCard, FileText, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import PaymentModal from './PaymentModal';
 import PoDModal from './PoDModal';
 import RatingModal from './RatingModal';
@@ -13,22 +13,26 @@ interface OrderListProps {
 
 const OrderList = ({ setOrderIdToTrack }: OrderListProps) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { ordersList, loading, error } = useSelector((state: RootState) => state.orders);
+  const { ordersList, ordersPagination, loading, error } = useSelector((state: RootState) => state.orders);
   
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<string | null>(null);
   const [selectedOrderForPoD, setSelectedOrderForPoD] = useState<Order | null>(null);
   const [selectedOrderForRating, setSelectedOrderForRating] = useState<string | null>(null);
 
   useEffect(() => {
-    dispatch(fetchOrders());
+    dispatch(fetchOrders({ page: 0, size: 10 }));
   }, [dispatch]);
 
+  const handlePageChange = (newPage: number) => {
+    dispatch(fetchOrders({ page: newPage, size: ordersPagination.size }));
+  };
+
   const handlePaymentSuccess = () => {
-    dispatch(fetchOrders()); // Refresh orders to update status if backend changes it
+    dispatch(fetchOrders({ page: ordersPagination.page, size: ordersPagination.size })); // Refresh current page
     setSelectedOrderForPayment(null);
   };
 
-  if (loading) return <div className="p-6 text-center text-slate-500">Loading orders...</div>;
+  if (loading && ordersList.length === 0) return <div className="p-6 text-center text-slate-500">Loading orders...</div>;
   if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
 
   return (
@@ -150,6 +154,30 @@ const OrderList = ({ setOrderIdToTrack }: OrderListProps) => {
             )}
           </tbody>
         </table>
+      </div>
+      
+      {/* Pagination Footer */}
+      <div className="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50">
+        <div className="text-sm text-slate-500">
+            Page <span className="font-medium">{ordersPagination.page + 1}</span> of <span className="font-medium">{ordersPagination.totalPages || 1}</span>
+            <span className="ml-2 text-xs text-slate-400">({ordersPagination.totalElements} items)</span>
+        </div>
+        <div className="flex gap-2">
+            <button 
+                disabled={ordersPagination.page === 0}
+                onClick={() => handlePageChange(ordersPagination.page - 1)}
+                className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
+            >
+                <ChevronLeft size={16} />
+            </button>
+            <button 
+                disabled={ordersPagination.page >= (ordersPagination.totalPages - 1)}
+                onClick={() => handlePageChange(ordersPagination.page + 1)}
+                className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
+            >
+                <ChevronRight size={16} />
+            </button>
+        </div>
       </div>
 
       {selectedOrderForPayment && (

@@ -5,6 +5,9 @@ import com.courier.order.dto.RateOrderRequest;
 import com.courier.order.entity.Order;
 import com.courier.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,20 +29,30 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Order>> getOrders(
+    public ResponseEntity<Page<Order>> getOrders(
             @RequestHeader("X-User-Id") String userId,
-            @RequestHeader(value = "X-User-Role", defaultValue = "CUSTOMER") String role) {
-        return ResponseEntity.ok(orderService.getOrders(userId, role));
+            @RequestHeader(value = "X-User-Role", defaultValue = "CUSTOMER") String role,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(orderService.getOrders(userId, role, pageable));
     }
 
     @GetMapping("/available")
-    public ResponseEntity<List<Order>> getAvailableOrders() {
-        return ResponseEntity.ok(orderService.getAvailableOrders());
+    public ResponseEntity<Page<Order>> getAvailableOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(orderService.getAvailableOrders(pageable));
     }
 
     @GetMapping("/assigned")
-    public ResponseEntity<List<Order>> getDriverOrders(@RequestHeader("X-User-Id") String driverId) {
-        return ResponseEntity.ok(orderService.getDriverOrders(driverId));
+    public ResponseEntity<Page<Order>> getDriverOrders(
+            @RequestHeader("X-User-Id") String driverId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(orderService.getDriverOrders(driverId, pageable));
     }
 
     @PutMapping("/{id}/status")

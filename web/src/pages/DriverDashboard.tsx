@@ -2,14 +2,39 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store/store';
 import { fetchDriverProfile, createDriverProfile, toggleDriverStatus, DriverStatus } from '../store/slices/driverSlice';
-import { fetchAvailableOrders, fetchDriverOrders, assignDriver, updateOrderStatus, OrderStatus } from '../store/slices/orderSlice';
+import { fetchAvailableOrders, fetchDriverOrders, assignDriver, updateOrderStatus, OrderStatus, PaginationInfo } from '../store/slices/orderSlice';
 import { fetchDriverStats } from '../store/slices/analyticsSlice';
-import { MapPin, Truck, TrendingUp, DollarSign, Package } from 'lucide-react';
+import { MapPin, Truck, TrendingUp, DollarSign, Package, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const Pagination = ({ pagination, onPageChange }: { pagination: PaginationInfo, onPageChange: (p: number) => void }) => (
+    <div className="col-span-full flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50 mt-4 rounded-xl">
+        <div className="text-sm text-slate-500">
+            Page <span className="font-medium">{pagination.page + 1}</span> of <span className="font-medium">{pagination.totalPages || 1}</span>
+             <span className="ml-2 text-xs text-slate-400">({pagination.totalElements} items)</span>
+        </div>
+        <div className="flex gap-2">
+            <button 
+                disabled={pagination.page === 0}
+                onClick={() => onPageChange(pagination.page - 1)}
+                className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
+            >
+                <ChevronLeft size={16} />
+            </button>
+            <button 
+                disabled={pagination.page >= (pagination.totalPages - 1)}
+                onClick={() => onPageChange(pagination.page + 1)}
+                className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
+            >
+                <ChevronRight size={16} />
+            </button>
+        </div>
+    </div>
+);
 
 const DriverDashboard = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { profile, loading: driverLoading } = useSelector((state: RootState) => state.driver);
-    const { availableOrders, driverOrders, loading: ordersLoading } = useSelector((state: RootState) => state.orders);
+    const { availableOrders, availablePagination, driverOrders, driverPagination, loading: ordersLoading } = useSelector((state: RootState) => state.orders);
     const { driverStats } = useSelector((state: RootState) => state.analytics);
     const { user } = useSelector((state: RootState) => state.auth);
 
@@ -23,8 +48,8 @@ const DriverDashboard = () => {
 
     useEffect(() => {
         if (profile) {
-            dispatch(fetchDriverOrders());
-            dispatch(fetchAvailableOrders());
+            dispatch(fetchDriverOrders({ page: 0, size: 9 }));
+            dispatch(fetchAvailableOrders({ page: 0, size: 9 }));
             dispatch(fetchDriverStats(profile.userId)); // Fetch stats using userId
         }
     }, [dispatch, profile]);
@@ -47,6 +72,14 @@ const DriverDashboard = () => {
 
     const handleUpdateOrderStatus = (orderId: string, status: OrderStatus) => {
         dispatch(updateOrderStatus({ id: orderId, status }));
+    };
+
+    const handleAssignedPageChange = (newPage: number) => {
+        dispatch(fetchDriverOrders({ page: newPage, size: driverPagination.size }));
+    };
+
+    const handleAvailablePageChange = (newPage: number) => {
+        dispatch(fetchAvailableOrders({ page: newPage, size: availablePagination.size }));
     };
 
     if (driverLoading && !profile) {
@@ -172,99 +205,105 @@ const DriverDashboard = () => {
                     </button>
                 </div>
 
-                {ordersLoading ? (
+                {ordersLoading && driverOrders.length === 0 && availableOrders.length === 0 ? (
                     <div className="text-center py-10">Loading orders...</div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {activeTab === 'assigned' && (
-                            driverOrders.length === 0 ? (
-                                <div className="col-span-full text-center py-10 text-slate-500">No assigned orders. Check available orders!</div>
-                            ) : (
-                                driverOrders.map(order => (
-                                    <div key={order.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">#{order.id.slice(0, 8)}</span>
-                                            <span className="text-xs font-bold text-slate-500">{order.status}</span>
-                                        </div>
-                                        <p className="font-semibold text-slate-800 mb-2">{order.packageDescription}</p>
-                                        
-                                        <div className="space-y-3 mb-6 flex-1">
-                                            <div className="flex gap-3 text-sm text-slate-600">
-                                                <MapPin size={16} className="text-blue-500 shrink-0 mt-0.5" />
-                                                <div>
-                                                    <p className="text-xs text-slate-400 uppercase font-semibold">Pickup</p>
-                                                    <p>{order.pickupAddress}</p>
+                            <>
+                                {driverOrders.length === 0 ? (
+                                    <div className="col-span-full text-center py-10 text-slate-500">No assigned orders. Check available orders!</div>
+                                ) : (
+                                    driverOrders.map(order => (
+                                        <div key={order.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">#{order.id.slice(0, 8)}</span>
+                                                <span className="text-xs font-bold text-slate-500">{order.status}</span>
+                                            </div>
+                                            <p className="font-semibold text-slate-800 mb-2">{order.packageDescription}</p>
+                                            
+                                            <div className="space-y-3 mb-6 flex-1">
+                                                <div className="flex gap-3 text-sm text-slate-600">
+                                                    <MapPin size={16} className="text-blue-500 shrink-0 mt-0.5" />
+                                                    <div>
+                                                        <p className="text-xs text-slate-400 uppercase font-semibold">Pickup</p>
+                                                        <p>{order.pickupAddress}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-3 text-sm text-slate-600">
+                                                    <MapPin size={16} className="text-red-500 shrink-0 mt-0.5" />
+                                                    <div>
+                                                        <p className="text-xs text-slate-400 uppercase font-semibold">Delivery</p>
+                                                        <p>{order.deliveryAddress}</p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-3 text-sm text-slate-600">
-                                                <MapPin size={16} className="text-red-500 shrink-0 mt-0.5" />
-                                                <div>
-                                                    <p className="text-xs text-slate-400 uppercase font-semibold">Delivery</p>
-                                                    <p>{order.deliveryAddress}</p>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <div className="grid grid-cols-2 gap-2 mt-auto">
-                                            {order.status === OrderStatus.ASSIGNED && (
-                                                <button 
-                                                    onClick={() => handleUpdateOrderStatus(order.id, OrderStatus.PICKED_UP)}
-                                                    className="col-span-2 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
-                                                >
-                                                    Confirm Pickup
-                                                </button>
-                                            )}
-                                            {order.status === OrderStatus.PICKED_UP && (
-                                                <button 
-                                                    onClick={() => handleUpdateOrderStatus(order.id, OrderStatus.DELIVERED)}
-                                                    className="col-span-2 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 text-sm font-medium"
-                                                >
-                                                    Confirm Delivery
-                                                </button>
-                                            )}
-                                            {order.status === OrderStatus.DELIVERED && (
-                                                <div className="col-span-2 text-center text-green-600 font-bold py-2 bg-green-50 rounded-lg">
-                                                    Completed
-                                                </div>
-                                            )}
+                                            <div className="grid grid-cols-2 gap-2 mt-auto">
+                                                {order.status === OrderStatus.ASSIGNED && (
+                                                    <button 
+                                                        onClick={() => handleUpdateOrderStatus(order.id, OrderStatus.PICKED_UP)}
+                                                        className="col-span-2 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
+                                                    >
+                                                        Confirm Pickup
+                                                    </button>
+                                                )}
+                                                {order.status === OrderStatus.PICKED_UP && (
+                                                    <button 
+                                                        onClick={() => handleUpdateOrderStatus(order.id, OrderStatus.DELIVERED)}
+                                                        className="col-span-2 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 text-sm font-medium"
+                                                    >
+                                                        Confirm Delivery
+                                                    </button>
+                                                )}
+                                                {order.status === OrderStatus.DELIVERED && (
+                                                    <div className="col-span-2 text-center text-green-600 font-bold py-2 bg-green-50 rounded-lg">
+                                                        Completed
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
-                            )
+                                    ))
+                                )}
+                                {driverOrders.length > 0 && <Pagination pagination={driverPagination} onPageChange={handleAssignedPageChange} />}
+                            </>
                         )}
 
                         {activeTab === 'available' && (
-                            availableOrders.length === 0 ? (
-                                <div className="col-span-full text-center py-10 text-slate-500">No orders available nearby.</div>
-                            ) : (
-                                availableOrders.map(order => (
-                                    <div key={order.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">New</span>
-                                            <span className="text-xs text-slate-400">{new Date(order.createdAt).toLocaleTimeString()}</span>
-                                        </div>
-                                        <p className="font-semibold text-slate-800 mb-2">{order.packageDescription}</p>
-                                        
-                                        <div className="space-y-3 mb-6 flex-1">
-                                            <div className="flex gap-3 text-sm text-slate-600">
-                                                <MapPin size={16} className="text-blue-500 shrink-0 mt-0.5" />
-                                                <p>{order.pickupAddress}</p>
+                            <>
+                                {availableOrders.length === 0 ? (
+                                    <div className="col-span-full text-center py-10 text-slate-500">No orders available nearby.</div>
+                                ) : (
+                                    availableOrders.map(order => (
+                                        <div key={order.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">New</span>
+                                                <span className="text-xs text-slate-400">{new Date(order.createdAt).toLocaleTimeString()}</span>
                                             </div>
-                                            <div className="flex gap-3 text-sm text-slate-600">
-                                                <MapPin size={16} className="text-red-500 shrink-0 mt-0.5" />
-                                                <p>{order.deliveryAddress}</p>
+                                            <p className="font-semibold text-slate-800 mb-2">{order.packageDescription}</p>
+                                            
+                                            <div className="space-y-3 mb-6 flex-1">
+                                                <div className="flex gap-3 text-sm text-slate-600">
+                                                    <MapPin size={16} className="text-blue-500 shrink-0 mt-0.5" />
+                                                    <p>{order.pickupAddress}</p>
+                                                </div>
+                                                <div className="flex gap-3 text-sm text-slate-600">
+                                                    <MapPin size={16} className="text-red-500 shrink-0 mt-0.5" />
+                                                    <p>{order.deliveryAddress}</p>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <button 
-                                            onClick={() => handleAcceptOrder(order.id)}
-                                            className="w-full bg-slate-900 text-white py-2 rounded-lg hover:bg-slate-800 text-sm font-medium flex items-center justify-center gap-2"
-                                        >
-                                            <Truck size={16} /> Accept Order
-                                        </button>
-                                    </div>
-                                ))
-                            )
+                                            <button 
+                                                onClick={() => handleAcceptOrder(order.id)}
+                                                className="w-full bg-slate-900 text-white py-2 rounded-lg hover:bg-slate-800 text-sm font-medium flex items-center justify-center gap-2"
+                                            >
+                                                <Truck size={16} /> Accept Order
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                                {availableOrders.length > 0 && <Pagination pagination={availablePagination} onPageChange={handleAvailablePageChange} />}
+                            </>
                         )}
                     </div>
                 )}

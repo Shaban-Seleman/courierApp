@@ -1,23 +1,31 @@
 import api from './api';
 
+export interface PageResponse<T> {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number; // Current Page
+}
+
 export const orderService = {
   createOrder: async (orderData: any) => {
     const response = await api.post('/orders', orderData);
     return response.data;
   },
 
-  getOrders: async () => {
-    const response = await api.get('/orders');
+  getOrders: async (page = 0, size = 10) => {
+    const response = await api.get(`/orders?page=${page}&size=${size}`);
     return response.data;
   },
 
-  getAvailableOrders: async () => {
-    const response = await api.get('/orders/available');
+  getAvailableOrders: async (page = 0, size = 10) => {
+    const response = await api.get(`/orders/available?page=${page}&size=${size}`);
     return response.data;
   },
 
-  getDriverOrders: async () => {
-    const response = await api.get('/orders/assigned');
+  getDriverOrders: async (page = 0, size = 10) => {
+    const response = await api.get(`/orders/assigned?page=${page}&size=${size}`);
     return response.data;
   },
 

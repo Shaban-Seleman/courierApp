@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { orderService } from '../../services/orderService';
+import { orderService, PageResponse } from '../../services/orderService';
 
 export enum OrderStatus {
     PENDING = 'PENDING',
@@ -24,10 +24,30 @@ export interface Order {
     signatureUrl?: string;
 }
 
+export interface PaginationInfo {
+    page: number;
+    size: number;
+    totalPages: number;
+    totalElements: number;
+}
+
+const defaultPagination: PaginationInfo = {
+    page: 0,
+    size: 10,
+    totalPages: 0,
+    totalElements: 0
+};
+
 interface OrderState {
     ordersList: Order[];
+    ordersPagination: PaginationInfo;
+
     availableOrders: Order[];
-    driverOrders: Order[]; // Orders assigned to me (as a driver)
+    availablePagination: PaginationInfo;
+
+    driverOrders: Order[];
+    driverPagination: PaginationInfo;
+
     currentOrder: Order | null;
     loading: boolean;
     error: string | null;
@@ -35,8 +55,11 @@ interface OrderState {
 
 const initialState: OrderState = {
     ordersList: [],
+    ordersPagination: defaultPagination,
     availableOrders: [],
+    availablePagination: defaultPagination,
     driverOrders: [],
+    driverPagination: defaultPagination,
     currentOrder: null,
     loading: false,
     error: null,
@@ -45,9 +68,9 @@ const initialState: OrderState = {
 // Async Thunks
 export const fetchOrders = createAsyncThunk(
     'orders/fetchOrders',
-    async (_, { rejectWithValue }) => {
+    async ({ page, size }: { page: number; size: number } = { page: 0, size: 10 }, { rejectWithValue }) => {
         try {
-            return await orderService.getOrders();
+            return await orderService.getOrders(page, size);
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
         }
@@ -56,9 +79,9 @@ export const fetchOrders = createAsyncThunk(
 
 export const fetchAvailableOrders = createAsyncThunk(
     'orders/fetchAvailableOrders',
-    async (_, { rejectWithValue }) => {
+    async ({ page, size }: { page: number; size: number } = { page: 0, size: 10 }, { rejectWithValue }) => {
         try {
-            return await orderService.getAvailableOrders();
+            return await orderService.getAvailableOrders(page, size);
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch available orders');
         }
@@ -67,9 +90,9 @@ export const fetchAvailableOrders = createAsyncThunk(
 
 export const fetchDriverOrders = createAsyncThunk(
     'orders/fetchDriverOrders',
-    async (_, { rejectWithValue }) => {
+    async ({ page, size }: { page: number; size: number } = { page: 0, size: 10 }, { rejectWithValue }) => {
         try {
-            return await orderService.getDriverOrders();
+            return await orderService.getDriverOrders(page, size);
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch driver orders');
         }
@@ -128,19 +151,44 @@ const orderSlice = createSlice({
             })
             .addCase(fetchOrders.fulfilled, (state, action) => {
                 state.loading = false;
-                state.ordersList = action.payload;
+                const payload = action.payload as unknown as PageResponse<Order>;
+                state.ordersList = payload.content;
+                state.ordersPagination = {
+                    page: payload.number,
+                    size: payload.size,
+                    totalPages: payload.totalPages,
+                    totalElements: payload.totalElements
+                };
             })
             // Fetch Available Orders
             .addCase(fetchAvailableOrders.fulfilled, (state, action) => {
-                state.availableOrders = action.payload;
+                const payload = action.payload as unknown as PageResponse<Order>;
+                state.availableOrders = payload.content;
+                state.availablePagination = {
+                    page: payload.number,
+                    size: payload.size,
+                    totalPages: payload.totalPages,
+                    totalElements: payload.totalElements
+                };
             })
             // Fetch Driver Orders
             .addCase(fetchDriverOrders.fulfilled, (state, action) => {
-                state.driverOrders = action.payload;
+                const payload = action.payload as unknown as PageResponse<Order>;
+                state.driverOrders = payload.content;
+                state.driverPagination = {
+                    page: payload.number,
+                    size: payload.size,
+                    totalPages: payload.totalPages,
+                    totalElements: payload.totalElements
+                };
             })
             // Create
             .addCase(createOrder.fulfilled, (state, action) => {
-                state.ordersList.push(action.payload);
+                // Optimistically add to list? Or re-fetch?
+                // Re-fetching is safer for pagination consistency, but we'll push to list if it's the first page
+                if (state.ordersPagination.page === 0) {
+                    state.ordersList.unshift(action.payload);
+                }
             })
             // Update Status
             .addCase(updateOrderStatus.fulfilled, (state, action) => {
@@ -155,9 +203,8 @@ const orderSlice = createSlice({
             })
             // Assign Driver
             .addCase(assignDriver.fulfilled, (state, action) => {
-                // Remove from available, add to driver orders (if it's me), update ordersList
                  state.availableOrders = state.availableOrders.filter(o => o.id !== action.payload.id);
-                 state.driverOrders.push(action.payload);
+                 state.driverOrders.unshift(action.payload);
             });
     },
 });

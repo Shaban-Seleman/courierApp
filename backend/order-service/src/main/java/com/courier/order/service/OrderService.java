@@ -9,7 +9,9 @@ import com.courier.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -114,12 +116,30 @@ public class OrderService {
         }
     }
 
+    public Page<Order> getOrders(String userId, String role, Pageable pageable) {
+        if ("ADMIN".equals(role)) {
+            return orderRepository.findAll(pageable);
+        } else if ("DRIVER".equals(role)) {
+            return orderRepository.findByDriverId(UUID.fromString(userId), pageable);
+        } else {
+            return orderRepository.findByCustomerId(UUID.fromString(userId), pageable);
+        }
+    }
+
     public List<Order> getAvailableOrders() {
         return orderRepository.findByStatus(Order.OrderStatus.PENDING);
     }
 
+    public Page<Order> getAvailableOrders(Pageable pageable) {
+        return orderRepository.findByStatus(Order.OrderStatus.PENDING, pageable);
+    }
+
     public List<Order> getDriverOrders(String driverId) {
         return orderRepository.findByDriverId(UUID.fromString(driverId));
+    }
+
+    public Page<Order> getDriverOrders(String driverId, Pageable pageable) {
+        return orderRepository.findByDriverId(UUID.fromString(driverId), pageable);
     }
 
     @Transactional
