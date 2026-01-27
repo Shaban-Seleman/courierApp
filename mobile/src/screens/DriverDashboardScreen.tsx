@@ -131,6 +131,7 @@ const DriverDashboardScreen = () => {
             </View>
             
             <Text className="text-gray-500 mb-1">Pickup: {order.pickupAddress}</Text>
+            <Text className="text-gray-500 mb-1">Package: {order.packageDescription}</Text>
             <Text className="text-gray-800 font-medium mb-4">Delivery: {order.deliveryAddress}</Text>
             
             <View className="flex-row gap-3">

@@ -92,9 +92,9 @@ const MapComponent = ({ orderId }: MapComponentProps) => {
   // Determine initial center and zoom based on tracked locations
   const initialCenter: [number, number] = trackedLocations.length > 0
     ? [trackedLocations[0].latitude, trackedLocations[0].longitude]
-    : [51.505, -0.09]; // Default to London if no locations yet
+    : [-6.369, 34.888]; // Default to Tanzania if no locations yet
 
-  const zoomLevel = trackedLocations.length > 0 ? 13 : 2; // Zoom in if tracking a driver, otherwise world view
+  const zoomLevel = trackedLocations.length > 0 ? 13 : 6; // Zoom in if tracking a driver, otherwise country view
 
   return (
     <div className="h-full w-full rounded-xl overflow-hidden shadow-lg border border-slate-200">
