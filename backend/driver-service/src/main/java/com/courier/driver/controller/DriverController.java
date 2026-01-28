@@ -35,6 +35,13 @@ public class DriverController {
         return ResponseEntity.ok(driverService.getProfile(UUID.fromString(userId), fullName));
     }
 
+    @PutMapping("/profile")
+    public ResponseEntity<Driver> updateProfile(
+            @RequestHeader("X-User-Id") String userId,
+            @RequestBody com.courier.driver.dto.UpdateDriverProfileRequest request) {
+        return ResponseEntity.ok(driverService.updateProfile(UUID.fromString(userId), request));
+    }
+
     @PutMapping("/status")
     public ResponseEntity<Driver> updateStatus(
             @RequestHeader("X-User-Id") String userId,

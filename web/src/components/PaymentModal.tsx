@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store/store';
 import { createPaymentIntent, resetPaymentState } from '../store/slices/paymentSlice';
@@ -6,15 +6,15 @@ import { X, CreditCard, CheckCircle } from 'lucide-react';
 
 interface PaymentModalProps {
   orderId: string;
+  amount: number;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-const PaymentModal = ({ orderId, isOpen, onClose, onSuccess }: PaymentModalProps) => {
+const PaymentModal = ({ orderId, amount, isOpen, onClose, onSuccess }: PaymentModalProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error, success } = useSelector((state: RootState) => state.payment);
-  const [amount] = useState(5000); // Default amount in cents or smallest currency unit (e.g., $50.00)
 
   useEffect(() => {
     if (success) {

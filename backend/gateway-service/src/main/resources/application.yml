@@ -35,6 +35,14 @@ spring:
             - Path=/api/v1/orders/**
           filters:
             - name: JwtAuthenticationFilter
+
+        # System Config (Order Service)
+        - id: system-config
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/v1/config/**
+          filters:
+            - name: JwtAuthenticationFilter
         
         # Driver Service (Protected)
         - id: driver-service

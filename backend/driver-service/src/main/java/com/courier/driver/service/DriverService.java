@@ -118,6 +118,16 @@ public class DriverService {
         return driver;
     }
 
+    public Driver updateProfile(UUID userId, com.courier.driver.dto.UpdateDriverProfileRequest request) {
+        Driver driver = driverRepository.findByUserId(userId)
+                .orElseThrow(() -> new DriverNotFoundException("Driver not found"));
+        
+        if (request.vehicleType() != null) driver.setVehicleType(request.vehicleType());
+        if (request.licensePlate() != null) driver.setLicensePlate(request.licensePlate());
+        
+        return driverRepository.save(driver);
+    }
+
     public java.util.List<Driver> getAllDrivers() {
         java.util.List<Driver> drivers = driverRepository.findAll();
         for (Driver driver : drivers) {

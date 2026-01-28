@@ -16,6 +16,11 @@ export const driverService = {
     return response.data;
   },
 
+  updateProfile: async (profileData: { vehicleType: string; licensePlate: string }) => {
+    const response = await api.put('/drivers/profile', profileData);
+    return response.data;
+  },
+
   getAllDrivers: async () => {
     const response = await api.get('/drivers');
     return response.data;

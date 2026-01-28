@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
 import { updateUserProfile, changeUserPassword } from '../store/slices/authSlice';
-import { User, Mail, Phone, Lock, Bell, Shield, LogOut, Map, Sun, Moon, Palette } from 'lucide-react';
+import { User, Mail, Phone, Lock, Bell, Shield, LogOut, Map, Sun, Moon, Palette, Truck, Settings as SettingsIcon } from 'lucide-react';
 import { logoutUser } from '../store/slices/authSlice';
+import { driverService } from '../services/driverService';
+import { systemConfigService, SystemConfig } from '../services/systemConfigService';
 import toast from 'react-hot-toast';
 
 const SettingsPage = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { user } = useSelector((state: RootState) => state.auth);
-    const [activeSection, setActiveSection] = useState<'profile' | 'security' | 'notifications' | 'app_prefs'>('profile');
+    const [activeSection, setActiveSection] = useState<'profile' | 'security' | 'notifications' | 'app_prefs' | 'vehicle' | 'system'>('profile');
 
     const [profileData, setProfileData] = useState({
         fullName: user?.fullName || '',
@@ -35,6 +37,46 @@ const SettingsPage = () => {
         sms: user?.smsNotifications ?? false,
         push: user?.pushNotifications ?? true
     });
+
+    // Driver Specific
+    const [vehicleData, setVehicleData] = useState({
+        vehicleType: '',
+        licensePlate: ''
+    });
+
+    // Admin Specific
+    const [systemConfigs, setSystemConfigs] = useState<SystemConfig[]>([]);
+
+    useEffect(() => {
+        if (activeSection === 'vehicle' && user?.role === 'DRIVER') {
+            loadDriverProfile();
+        } else if (activeSection === 'system' && user?.role === 'ADMIN') {
+            loadSystemConfigs();
+        }
+    }, [activeSection, user]);
+
+    const loadDriverProfile = async () => {
+        try {
+            const profile = await driverService.getProfile();
+            setVehicleData({
+                vehicleType: profile.vehicleType || '',
+                licensePlate: profile.licensePlate || ''
+            });
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to load vehicle details');
+        }
+    };
+
+    const loadSystemConfigs = async () => {
+        try {
+            const configs = await systemConfigService.getAllConfigs();
+            setSystemConfigs(configs);
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to load system configurations');
+        }
+    };
 
     const handleLogout = () => {
         dispatch(logoutUser());
@@ -120,6 +162,28 @@ const SettingsPage = () => {
         }
     };
 
+    const handleUpdateVehicle = async () => {
+        try {
+            await driverService.updateProfile(vehicleData);
+            toast.success('Vehicle details updated successfully');
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to update vehicle details');
+        }
+    };
+
+    const handleUpdateSystemConfig = async (key: string, value: string) => {
+        try {
+            await systemConfigService.updateConfig(key, value);
+            toast.success('Configuration updated');
+            // Refresh local state to confirm (optional, could just update optimistic)
+            setSystemConfigs(configs => configs.map(c => c.key === key ? { ...c, value } : c));
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to update configuration');
+        }
+    };
+
     return (
         <div className="max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">Settings</h1>
@@ -135,6 +199,29 @@ const SettingsPage = () => {
                     >
                         <User size={18} /> Profile
                     </button>
+                    
+                    {user?.role === 'DRIVER' && (
+                        <button
+                            onClick={() => setActiveSection('vehicle')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                                activeSection === 'vehicle' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            <Truck size={18} /> Vehicle Details
+                        </button>
+                    )}
+
+                    {user?.role === 'ADMIN' && (
+                         <button
+                            onClick={() => setActiveSection('system')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                                activeSection === 'system' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            <SettingsIcon size={18} /> System Config
+                        </button>
+                    )}
+
                     <button
                         onClick={() => setActiveSection('app_prefs')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
@@ -235,6 +322,97 @@ const SettingsPage = () => {
                                     >
                                         Save Changes
                                     </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Vehicle Details (Driver Only) */}
+                        {activeSection === 'vehicle' && user?.role === 'DRIVER' && (
+                            <div className="p-6 space-y-6">
+                                <h3 className="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+                                    <Truck size={20} className="text-blue-500"/> Vehicle Information
+                                </h3>
+                                
+                                <div className="space-y-4">
+                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Vehicle Type</label>
+                                            <select
+                                                value={vehicleData.vehicleType}
+                                                onChange={(e) => setVehicleData({...vehicleData, vehicleType: e.target.value})}
+                                                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors"
+                                            >
+                                                <option value="">Select Vehicle Type</option>
+                                                <option value="MOTORCYCLE">Motorcycle</option>
+                                                <option value="CAR">Car</option>
+                                                <option value="VAN">Van</option>
+                                                <option value="TRUCK">Truck</option>
+                                                <option value="BICYCLE">Bicycle</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">License Plate</label>
+                                            <input
+                                                type="text"
+                                                value={vehicleData.licensePlate}
+                                                onChange={(e) => setVehicleData({...vehicleData, licensePlate: e.target.value})}
+                                                placeholder="e.g. T 123 ABC"
+                                                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors"
+                                            />
+                                        </div>
+                                     </div>
+                                </div>
+
+                                <div className="pt-4 flex justify-end">
+                                    <button 
+                                        onClick={handleUpdateVehicle}
+                                        className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                                    >
+                                        Update Vehicle
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* System Configuration (Admin Only) */}
+                        {activeSection === 'system' && user?.role === 'ADMIN' && (
+                            <div className="p-6 space-y-6">
+                                <h3 className="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+                                    <SettingsIcon size={20} className="text-blue-500"/> System Configuration
+                                </h3>
+                                
+                                <div className="space-y-4">
+                                    {systemConfigs.length === 0 ? (
+                                        <p className="text-slate-500 dark:text-slate-400">Loading configurations...</p>
+                                    ) : (
+                                        systemConfigs.map((config) => (
+                                            <div key={config.key} className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h4 className="font-medium text-slate-800 dark:text-white">{config.key.replace(/_/g, ' ').toUpperCase()}</h4>
+                                                        <p className="text-sm text-slate-500 dark:text-slate-400">{config.description}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        value={config.value}
+                                                        onChange={(e) => {
+                                                            const newValue = e.target.value;
+                                                            setSystemConfigs(configs => configs.map(c => c.key === config.key ? { ...c, value: newValue } : c));
+                                                        }}
+                                                        className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors"
+                                                    />
+                                                    <button
+                                                        onClick={() => handleUpdateSystemConfig(config.key, config.value)}
+                                                        className="bg-slate-900 dark:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors"
+                                                    >
+                                                        Save
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         )}

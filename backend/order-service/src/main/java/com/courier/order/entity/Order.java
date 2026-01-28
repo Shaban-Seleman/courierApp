@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -38,6 +39,8 @@ public class Order {
 
     @Column(nullable = false)
     private String packageDescription;
+    
+    private BigDecimal deliveryFee;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

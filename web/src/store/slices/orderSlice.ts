@@ -22,6 +22,9 @@ export interface Order {
     updatedAt: string;
     photoUrl?: string;
     signatureUrl?: string;
+    deliveryFee?: number;
+    rating?: number;
+    feedback?: string;
 }
 
 export interface PaginationInfo {

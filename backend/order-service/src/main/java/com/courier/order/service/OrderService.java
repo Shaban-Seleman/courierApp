@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,15 +28,20 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final RabbitTemplate rabbitTemplate;
     private final UserClient userClient;
+    private final SystemConfigService systemConfigService;
 
     @Transactional
     public Order createOrder(CreateOrderRequest request, String customerId) {
+        String baseFeeStr = systemConfigService.getConfigValue("delivery_base_fee");
+        BigDecimal deliveryFee = new BigDecimal(baseFeeStr != null ? baseFeeStr : "5.00");
+
         var order = Order.builder()
                 .customerId(UUID.fromString(customerId))
                 .pickupAddress(request.pickupAddress())
                 .deliveryAddress(request.deliveryAddress())
                 .packageDescription(request.packageDescription())
                 .status(Order.OrderStatus.PENDING)
+                .deliveryFee(deliveryFee)
                 .build();
 
         Order savedOrder = orderRepository.save(order);
