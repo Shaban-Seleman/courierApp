@@ -8,6 +8,14 @@ export interface User {
   fullName: string;
   email: string;
   role: UserRole;
+  phone?: string;
+  emailNotifications?: boolean;
+  smsNotifications?: boolean;
+  pushNotifications?: boolean;
+  defaultLatitude?: number;
+  defaultLongitude?: number;
+  defaultCity?: string;
+  theme?: 'LIGHT' | 'DARK';
 }
 
 interface AuthState {
@@ -60,6 +68,28 @@ export const logoutUser = createAsyncThunk(
     }
 );
 
+export const updateUserProfile = createAsyncThunk(
+    'auth/updateProfile',
+    async ({ userId, data }: { userId: string; data: Partial<User> }, { rejectWithValue }) => {
+        try {
+            return await authService.updateProfile(userId, data);
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || 'Profile update failed');
+        }
+    }
+);
+
+export const changeUserPassword = createAsyncThunk(
+    'auth/changePassword',
+    async ({ userId, data }: { userId: string; data: any }, { rejectWithValue }) => {
+        try {
+            await authService.changePassword(userId, data);
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || 'Password change failed');
+        }
+    }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -103,11 +133,17 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state) => {
           state.loading = false;
-          // Registration usually doesn't auto-login in this flow, or it might
       })
       .addCase(registerUser.rejected, (state, action) => {
           state.loading = false;
           state.error = action.payload as string;
+      })
+      // Update Profile
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+          if (state.user) {
+              state.user = { ...state.user, ...action.payload };
+              localStorage.setItem('user', JSON.stringify(state.user));
+          }
       });
   },
 });

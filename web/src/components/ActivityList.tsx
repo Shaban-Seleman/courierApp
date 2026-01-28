@@ -31,24 +31,24 @@ const ActivityList = () => {
     dispatch(fetchRecentActivities(5)); // Fetch top 5 recent activities
   }, [dispatch]);
 
-  if (loading) return <div className="p-4 text-center text-slate-500">Loading activities...</div>;
+  if (loading) return <div className="p-4 text-center text-slate-500 dark:text-slate-400">Loading activities...</div>;
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-full">
-      <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 h-full transition-colors">
+      <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center">
         <Clock className="w-5 h-5 mr-2 text-slate-400" />
         Recent Activity
       </h3>
       <div className="space-y-4">
         {activities.length === 0 ? (
-          <div className="text-center text-slate-500">No recent activities.</div>
+          <div className="text-center text-slate-500 dark:text-slate-400">No recent activities.</div>
         ) : (
           activities.map((activity: any) => (
-            <div key={activity.id} className="flex items-start border-b border-slate-50 pb-3 last:border-0 last:pb-0">
+            <div key={activity.id} className="flex items-start border-b border-slate-50 dark:border-slate-700 pb-3 last:border-0 last:pb-0">
               <div className="w-2 h-2 mt-2 rounded-full bg-blue-500 mr-3 flex-shrink-0" />
               <div>
-                <p className="text-sm text-slate-700">{activity.description || `Order #${activity.id.slice(0,8)} ${activity.status}`}</p>
+                <p className="text-sm text-slate-700 dark:text-slate-200">{activity.description || `Order #${activity.id.slice(0,8)} ${activity.status}`}</p>
                 <p className="text-xs text-slate-400 mt-1">{formatTimeAgo(activity.createdAt || activity.timestamp)}</p>
               </div>
             </div>

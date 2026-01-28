@@ -179,6 +179,41 @@ public class OrderService {
         }
     }
 
+    public com.courier.order.dto.OrderStatsResponse getOrderStats(String userId, String role) {
+        long pending = 0;
+        long assigned = 0;
+        long pickedUp = 0;
+        long delivered = 0;
+        long cancelled = 0;
+
+        if ("ADMIN".equals(role)) {
+            pending = orderRepository.countByStatus(Order.OrderStatus.PENDING);
+            assigned = orderRepository.countByStatus(Order.OrderStatus.ASSIGNED);
+            pickedUp = orderRepository.countByStatus(Order.OrderStatus.PICKED_UP);
+            delivered = orderRepository.countByStatus(Order.OrderStatus.DELIVERED);
+            cancelled = orderRepository.countByStatus(Order.OrderStatus.CANCELLED);
+        } else if ("DRIVER".equals(role)) {
+            UUID driverId = UUID.fromString(userId);
+            // Drivers usually don't have PENDING orders (unassigned), but checking anyway
+            pending = orderRepository.countByDriverIdAndStatus(driverId, Order.OrderStatus.PENDING); 
+            assigned = orderRepository.countByDriverIdAndStatus(driverId, Order.OrderStatus.ASSIGNED);
+            pickedUp = orderRepository.countByDriverIdAndStatus(driverId, Order.OrderStatus.PICKED_UP);
+            delivered = orderRepository.countByDriverIdAndStatus(driverId, Order.OrderStatus.DELIVERED);
+            cancelled = orderRepository.countByDriverIdAndStatus(driverId, Order.OrderStatus.CANCELLED);
+        } else { // Customer
+            UUID customerId = UUID.fromString(userId);
+            pending = orderRepository.countByCustomerIdAndStatus(customerId, Order.OrderStatus.PENDING);
+            assigned = orderRepository.countByCustomerIdAndStatus(customerId, Order.OrderStatus.ASSIGNED);
+            pickedUp = orderRepository.countByCustomerIdAndStatus(customerId, Order.OrderStatus.PICKED_UP);
+            delivered = orderRepository.countByCustomerIdAndStatus(customerId, Order.OrderStatus.DELIVERED);
+            cancelled = orderRepository.countByCustomerIdAndStatus(customerId, Order.OrderStatus.CANCELLED);
+        }
+        
+        long total = pending + assigned + pickedUp + delivered + cancelled;
+
+        return new com.courier.order.dto.OrderStatsResponse(pending, assigned, pickedUp, delivered, cancelled, total);
+    }
+
     private void validateTransition(Order.OrderStatus current, Order.OrderStatus next) {
         if (current == next) {
             return;

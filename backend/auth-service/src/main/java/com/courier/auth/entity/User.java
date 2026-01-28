@@ -34,9 +34,31 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String fullName;
 
+    private String phone;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean emailNotifications = true;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean smsNotifications = false;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean pushNotifications = true;
+
+    private Double defaultLatitude;
+    private Double defaultLongitude;
+    private String defaultCity;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private Theme theme = Theme.LIGHT;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -72,5 +94,10 @@ public class User implements UserDetails {
         CUSTOMER,
         DRIVER,
         ADMIN
+    }
+
+    public enum Theme {
+        LIGHT,
+        DARK
     }
 }

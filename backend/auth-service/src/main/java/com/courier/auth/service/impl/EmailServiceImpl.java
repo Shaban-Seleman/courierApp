@@ -43,4 +43,21 @@ public class EmailServiceImpl implements EmailService {
             throw new RuntimeException("Failed to send email");
         }
     }
+
+    @Override
+    public void sendNotificationEmail(String to, String subject, String text) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(text, false); // false for plain text
+
+            mailSender.send(message);
+            log.info("Notification email sent to {}", to);
+        } catch (MessagingException e) {
+            log.error("Failed to send notification email to {}", to, e);
+        }
+    }
 }

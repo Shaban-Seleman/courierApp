@@ -42,8 +42,7 @@ public class AuthService {
         userRepository.save(user);
 
         var token = jwtProvider.generateToken(user.getEmail(), user.getId(), user.getRole().name(), user.getFullName());
-        var userDto = new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole().name());
-        return new AuthResponse(token, userDto);
+        return new AuthResponse(token, mapToUserDto(user));
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -55,8 +54,7 @@ public class AuthService {
                 .orElseThrow();
         
         var token = jwtProvider.generateToken(user.getEmail(), user.getId(), user.getRole().name(), user.getFullName());
-        var userDto = new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole().name());
-        return new AuthResponse(token, userDto);
+        return new AuthResponse(token, mapToUserDto(user));
     }
 
     public void forgotPassword(ForgotPasswordRequest request) {
@@ -96,9 +94,13 @@ public class AuthService {
     public void logout(String token) {
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
-            long remainingTime = jwtProvider.getRemainingTime(token);
-            if (remainingTime > 0) {
-                tokenBlacklistService.blacklistToken(token, remainingTime);
+            try {
+                long remainingTime = jwtProvider.getRemainingTime(token);
+                if (remainingTime > 0) {
+                    tokenBlacklistService.blacklistToken(token, remainingTime);
+                }
+            } catch (Exception e) {
+                // Token invalid or expired, no need to blacklist
             }
         }
     }
@@ -106,6 +108,63 @@ public class AuthService {
     public UserDto getUserById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole().name());
+        return mapToUserDto(user);
+    }
+
+    public UserDto updateProfile(UUID userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (request.fullName() != null) user.setFullName(request.fullName());
+        if (request.phone() != null) user.setPhone(request.phone());
+        if (request.emailNotifications() != null) user.setEmailNotifications(request.emailNotifications());
+        if (request.smsNotifications() != null) user.setSmsNotifications(request.smsNotifications());
+        if (request.pushNotifications() != null) user.setPushNotifications(request.pushNotifications());
+        if (request.defaultLatitude() != null) user.setDefaultLatitude(request.defaultLatitude());
+        if (request.defaultLongitude() != null) user.setDefaultLongitude(request.defaultLongitude());
+        if (request.defaultCity() != null) user.setDefaultCity(request.defaultCity());
+        if (request.theme() != null) {
+            try {
+                user.setTheme(User.Theme.valueOf(request.theme().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid theme or set default
+            }
+        }
+        
+        userRepository.save(user);
+        return mapToUserDto(user);
+    }
+
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new RuntimeException("Incorrect current password");
+        }
+
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new RuntimeException("New passwords do not match");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+    }
+
+    private UserDto mapToUserDto(User user) {
+        return new UserDto(
+            user.getId(),
+            user.getEmail(),
+            user.getFullName(),
+            user.getRole().name(),
+            user.getPhone(),
+            user.isEmailNotifications(),
+            user.isSmsNotifications(),
+            user.isPushNotifications(),
+            user.getDefaultLatitude(),
+            user.getDefaultLongitude(),
+            user.getDefaultCity(),
+            user.getTheme() != null ? user.getTheme().name() : "LIGHT"
+        );
     }
 }

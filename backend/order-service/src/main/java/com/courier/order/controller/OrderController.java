@@ -84,4 +84,11 @@ public class OrderController {
             @RequestHeader(value = "X-User-Role", defaultValue = "CUSTOMER") String role) {
         return ResponseEntity.ok(orderService.getRecentOrderActivities(limit, userId, role));
     }
+
+    @GetMapping("/stats")
+    public ResponseEntity<com.courier.order.dto.OrderStatsResponse> getStats(
+            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader(value = "X-User-Role", defaultValue = "CUSTOMER") String role) {
+        return ResponseEntity.ok(orderService.getOrderStats(userId, role));
+    }
 }

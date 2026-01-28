@@ -31,8 +31,8 @@ public class DriverController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<Driver> getProfile(@RequestHeader("X-User-Id") String userId) {
-        return ResponseEntity.ok(driverService.getProfile(UUID.fromString(userId)));
+    public ResponseEntity<Driver> getProfile(@RequestHeader("X-User-Id") String userId, @RequestHeader(value = "X-User-Name", required = false) String fullName) {
+        return ResponseEntity.ok(driverService.getProfile(UUID.fromString(userId), fullName));
     }
 
     @PutMapping("/status")

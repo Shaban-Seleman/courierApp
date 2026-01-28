@@ -152,7 +152,11 @@ const MapComponent = ({ orderId }: MapComponentProps) => {
     };
   }, [orderId, currentOrder, user]);
 
-  const defaultCenter: [number, number] = [-6.369, 34.888]; // Tanzania
+  // Use user's default location if available, otherwise default to Tanzania
+  const defaultCenter: [number, number] = 
+    (user?.defaultLatitude && user?.defaultLongitude) 
+        ? [user.defaultLatitude, user.defaultLongitude] 
+        : [-6.369, 34.888]; 
 
   // Calculate route line
   const routeLine = useMemo(() => {
@@ -169,10 +173,10 @@ const MapComponent = ({ orderId }: MapComponentProps) => {
   }, [currentOrder, trackedLocations, pickupCoords, deliveryCoords]);
 
   return (
-    <div className="h-full w-full rounded-xl overflow-hidden shadow-lg border border-slate-200 relative">
+    <div className="h-full w-full rounded-xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700 relative transition-colors">
       <MapContainer
         center={defaultCenter}
-        zoom={6}
+        zoom={user?.defaultLatitude ? 12 : 6} // Zoom in closer if using a specific city location
         scrollWheelZoom={true}
         style={{ height: '100%', width: '100%' }}
       >
@@ -224,26 +228,26 @@ const MapComponent = ({ orderId }: MapComponentProps) => {
       
       {/* Legend / Status Overlay for specific order */}
       {orderId && (
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-lg z-[1000] border border-slate-100 max-w-xs">
-            <h4 className="font-bold text-slate-800 mb-2">Tracking Shipment</h4>
+        <div className="absolute top-4 right-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-4 rounded-xl shadow-lg z-[1000] border border-slate-100 dark:border-slate-700 max-w-xs transition-colors">
+            <h4 className="font-bold text-slate-800 dark:text-white mb-2">Tracking Shipment</h4>
             <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-500 border border-white shadow-sm"></div>
-                    <span className="text-slate-600">Pickup</span>
+                    <div className="w-3 h-3 rounded-full bg-blue-500 border border-white dark:border-slate-600 shadow-sm"></div>
+                    <span className="text-slate-600 dark:text-slate-300">Pickup</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-slate-900 border border-white shadow-sm"></div>
-                    <span className="text-slate-600">Driver</span>
+                    <div className="w-3 h-3 rounded-full bg-slate-900 dark:bg-slate-700 border border-white dark:border-slate-600 shadow-sm"></div>
+                    <span className="text-slate-600 dark:text-slate-300">Driver</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500 border border-white shadow-sm"></div>
-                    <span className="text-slate-600">Destination</span>
+                    <div className="w-3 h-3 rounded-full bg-red-500 border border-white dark:border-slate-600 shadow-sm"></div>
+                    <span className="text-slate-600 dark:text-slate-300">Destination</span>
                 </div>
             </div>
             {currentOrder && (
-                <div className="mt-3 pt-3 border-t border-slate-200">
-                    <span className="text-xs font-semibold text-slate-500 uppercase">Status</span>
-                    <div className="text-slate-800 font-medium">{currentOrder.status.replace('_', ' ')}</div>
+                <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Status</span>
+                    <div className="text-slate-800 dark:text-white font-medium">{currentOrder.status.replace('_', ' ')}</div>
                 </div>
             )}
         </div>

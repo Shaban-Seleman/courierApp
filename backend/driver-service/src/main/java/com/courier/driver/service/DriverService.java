@@ -79,11 +79,15 @@ public class DriverService {
         return savedDriver;
     }
 
-    public Driver getProfile(UUID userId) {
+    public Driver getProfile(UUID userId, String fullName) {
         Driver driver = driverRepository.findByUserId(userId)
                 .orElseThrow(() -> new DriverNotFoundException("Driver not found"));
 
-        if (driver.getFullName() == null || driver.getFullName().isBlank()) {
+        if (fullName != null && !fullName.isBlank() && !fullName.equals(driver.getFullName())) {
+            driver.setFullName(fullName);
+            driver = driverRepository.save(driver);
+            log.info("Updated driver fullName from header: {}", fullName);
+        } else if (driver.getFullName() == null || driver.getFullName().isBlank()) {
             try {
                 UserDto userDetails = userClient.getUserById(userId);
                 if (userDetails != null) {

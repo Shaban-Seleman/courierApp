@@ -1,6 +1,8 @@
 package com.courier.auth.controller;
 
 import com.courier.auth.dto.UserDto;
+import com.courier.auth.dto.UpdateProfileRequest;
+import com.courier.auth.dto.ChangePasswordRequest;
 import com.courier.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,5 +20,20 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(authService.getUserById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> updateProfile(
+            @PathVariable UUID id,
+            @RequestBody UpdateProfileRequest request) {
+        return ResponseEntity.ok(authService.updateProfile(id, request));
+    }
+
+    @PostMapping("/{id}/password")
+    public ResponseEntity<Void> changePassword(
+            @PathVariable UUID id,
+            @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(id, request);
+        return ResponseEntity.ok().build();
     }
 }

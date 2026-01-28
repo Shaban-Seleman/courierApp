@@ -21,7 +21,7 @@ const OrdersPage = () => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-slate-800">All Orders</h1>
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-white">All Orders</h1>
             </div>
             
             <OrderList setOrderIdToTrack={handleTrack} />

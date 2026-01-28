@@ -6,5 +6,13 @@ public record UserDto(
     UUID id,
     String email,
     String fullName,
-    String role
+    String role,
+    String phone,
+    boolean emailNotifications,
+    boolean smsNotifications,
+    boolean pushNotifications,
+    Double defaultLatitude,
+    Double defaultLongitude,
+    String defaultCity,
+    String theme
 ) {}

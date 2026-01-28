@@ -48,6 +48,9 @@ spring:
   mail:
     host: mailhog
     port: 1025
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
 eureka:
   client:
     service-url:

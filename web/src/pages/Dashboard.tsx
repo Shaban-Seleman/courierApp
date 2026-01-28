@@ -27,8 +27,8 @@ const Dashboard = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-          <p className="text-slate-500 mt-1">Welcome back, {user?.fullName || 'User'}</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Dashboard</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Welcome back, {user?.fullName || 'User'}</p>
         </div>
         <Link
           to="/orders/new"
@@ -46,9 +46,9 @@ const Dashboard = () => {
         {/* Main Content Area - 2/3 width */}
         <div className="lg:col-span-2 space-y-6">
           <OrderList setOrderIdToTrack={setOrderIdToTrack} />
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-[500px]"> {/* Adjusted height for better visibility */}
-             <h2 className="text-lg font-bold text-slate-800 mb-4">Live Tracking {orderIdToTrack && `for Order: ${orderIdToTrack.substring(0,8)}`}</h2>
-             <div className="h-[calc(100%-40px)] rounded-lg"> {/* Adjust inner div to take remaining height, accounting for h2 and mb-4 */}
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm h-[500px] transition-colors"> {/* Adjusted height for better visibility */}
+             <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Live Tracking {orderIdToTrack && `for Order: ${orderIdToTrack.substring(0,8)}`}</h2>
+             <div className="h-[calc(100%-40px)] rounded-lg overflow-hidden"> {/* Adjust inner div to take remaining height, accounting for h2 and mb-4 */}
                 <MapComponent orderId={orderIdToTrack} />
              </div>
           </div>

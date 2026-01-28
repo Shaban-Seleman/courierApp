@@ -37,5 +37,10 @@ export const orderService = {
   assignDriver: async (orderId: string, driverId: string) => {
     const response = await api.put(`/orders/${orderId}/assign/${driverId}`);
     return response.data;
+  },
+
+  getOrderStats: async () => {
+    const response = await api.get('/orders/stats');
+    return response.data;
   }
 };

@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 
 // Replace with 'ws://10.0.2.2:8080/ws-tracking/websocket' for Android Emulator
-const WS_URL = 'ws://192.168.0.177:8080/ws-tracking/websocket';
+const WS_URL = 'ws://192.168.0.43:8080/ws-tracking/websocket';
 
 class TrackingService {
   client: Client | null = null;

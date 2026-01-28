@@ -18,7 +18,8 @@ export const driverService = {
 
   getAssignedOrders: async () => {
     const response = await api.get('/orders/assigned');
-    return response.data;
+    // Backend returns Page<Order>, so we extract content
+    return response.data.content || [];
   },
 
   updateOrderStatus: async (orderId: string, status: string) => {
