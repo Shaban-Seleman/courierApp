@@ -33,6 +33,9 @@ public class Driver {
     private Double currentLatitude;
     private Double currentLongitude;
 
+    private java.time.LocalTime shiftStart;
+    private java.time.LocalTime shiftEnd;
+
     public enum DriverStatus {
         ONLINE,
         OFFLINE,

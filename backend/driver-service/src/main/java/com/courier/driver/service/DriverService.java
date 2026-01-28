@@ -124,6 +124,8 @@ public class DriverService {
         
         if (request.vehicleType() != null) driver.setVehicleType(request.vehicleType());
         if (request.licensePlate() != null) driver.setLicensePlate(request.licensePlate());
+        if (request.shiftStart() != null) driver.setShiftStart(request.shiftStart());
+        if (request.shiftEnd() != null) driver.setShiftEnd(request.shiftEnd());
         
         return driverRepository.save(driver);
     }

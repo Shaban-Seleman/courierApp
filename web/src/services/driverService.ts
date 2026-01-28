@@ -16,7 +16,7 @@ export const driverService = {
     return response.data;
   },
 
-  updateProfile: async (profileData: { vehicleType: string; licensePlate: string }) => {
+  updateProfile: async (profileData: { vehicleType: string; licensePlate: string; shiftStart?: string; shiftEnd?: string }) => {
     const response = await api.put('/drivers/profile', profileData);
     return response.data;
   },

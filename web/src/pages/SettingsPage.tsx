@@ -41,7 +41,9 @@ const SettingsPage = () => {
     // Driver Specific
     const [vehicleData, setVehicleData] = useState({
         vehicleType: '',
-        licensePlate: ''
+        licensePlate: '',
+        shiftStart: '',
+        shiftEnd: ''
     });
 
     // Admin Specific
@@ -60,7 +62,9 @@ const SettingsPage = () => {
             const profile = await driverService.getProfile();
             setVehicleData({
                 vehicleType: profile.vehicleType || '',
-                licensePlate: profile.licensePlate || ''
+                licensePlate: profile.licensePlate || '',
+                shiftStart: profile.shiftStart || '',
+                shiftEnd: profile.shiftEnd || ''
             });
         } catch (error) {
             console.error(error);
@@ -357,6 +361,26 @@ const SettingsPage = () => {
                                                 value={vehicleData.licensePlate}
                                                 onChange={(e) => setVehicleData({...vehicleData, licensePlate: e.target.value})}
                                                 placeholder="e.g. T 123 ABC"
+                                                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors"
+                                            />
+                                        </div>
+                                     </div>
+                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Shift Start Time</label>
+                                            <input
+                                                type="time"
+                                                value={vehicleData.shiftStart}
+                                                onChange={(e) => setVehicleData({...vehicleData, shiftStart: e.target.value})}
+                                                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Shift End Time</label>
+                                            <input
+                                                type="time"
+                                                value={vehicleData.shiftEnd}
+                                                onChange={(e) => setVehicleData({...vehicleData, shiftEnd: e.target.value})}
                                                 className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors"
                                             />
                                         </div>
