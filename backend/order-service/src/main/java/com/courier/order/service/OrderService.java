@@ -29,11 +29,19 @@ public class OrderService {
     private final RabbitTemplate rabbitTemplate;
     private final UserClient userClient;
     private final SystemConfigService systemConfigService;
+    private final GeocodingService geocodingService;
 
     @Transactional
     public Order createOrder(CreateOrderRequest request, String customerId) {
         String baseFeeStr = systemConfigService.getConfigValue("delivery_base_fee");
-        BigDecimal deliveryFee = new BigDecimal(baseFeeStr != null ? baseFeeStr : "5.00");
+        String perKmStr = systemConfigService.getConfigValue("delivery_per_km");
+        
+        BigDecimal baseFee = new BigDecimal(baseFeeStr != null ? baseFeeStr : "5.00");
+        BigDecimal perKm = new BigDecimal(perKmStr != null ? perKmStr : "1.50");
+        
+        double distance = geocodingService.calculateDistance(request.pickupAddress(), request.deliveryAddress());
+        BigDecimal distanceFee = perKm.multiply(BigDecimal.valueOf(distance));
+        BigDecimal totalFee = baseFee.add(distanceFee);
 
         var order = Order.builder()
                 .customerId(UUID.fromString(customerId))
@@ -41,7 +49,8 @@ public class OrderService {
                 .deliveryAddress(request.deliveryAddress())
                 .packageDescription(request.packageDescription())
                 .status(Order.OrderStatus.PENDING)
-                .deliveryFee(deliveryFee)
+                .deliveryFee(totalFee.setScale(2, java.math.RoundingMode.HALF_UP))
+                .distanceKm(Math.round(distance * 100.0) / 100.0) // Round to 2 decimals
                 .build();
 
         Order savedOrder = orderRepository.save(order);

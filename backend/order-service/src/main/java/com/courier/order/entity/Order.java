@@ -41,6 +41,8 @@ public class Order {
     private String packageDescription;
     
     private BigDecimal deliveryFee;
+    
+    private Double distanceKm;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

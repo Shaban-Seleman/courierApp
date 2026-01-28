@@ -48,6 +48,7 @@ const OrderList = ({ setOrderIdToTrack }: OrderListProps) => {
               <th className="px-6 py-4">Description</th>
               <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4">Price</th>
+              <th className="px-6 py-4">Dist</th>
               <th className="px-6 py-4">Pickup</th>
               <th className="px-6 py-4">Delivery</th>
               <th className="px-6 py-4">Driver</th>
@@ -81,6 +82,9 @@ const OrderList = ({ setOrderIdToTrack }: OrderListProps) => {
                     </td>
                     <td className="px-6 py-4 text-slate-600 dark:text-slate-300 font-medium">
                         ${order.deliveryFee ? order.deliveryFee.toFixed(2) : '0.00'}
+                    </td>
+                    <td className="px-6 py-4 text-slate-500 dark:text-slate-400 text-sm">
+                        {order.distanceKm ? `${order.distanceKm.toFixed(1)} km` : '-'}
                     </td>
                     <td className="px-6 py-4 text-slate-600 dark:text-slate-300 text-sm">
                         <div className="flex items-center gap-1"><MapPin size={14} className="text-blue-500"/> {order.pickupAddress}</div>

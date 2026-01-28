@@ -23,6 +23,7 @@ export interface Order {
     photoUrl?: string;
     signatureUrl?: string;
     deliveryFee?: number;
+    distanceKm?: number;
     rating?: number;
     feedback?: string;
 }
